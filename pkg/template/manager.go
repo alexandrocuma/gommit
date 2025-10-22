@@ -22,12 +22,12 @@ func NewTemplateManager() *TemplateManager {
 // LoadTemplate loads a template by name or file path
 func LoadTemplate(templateName string) (string, error) {
 	tm := NewTemplateManager()
-	
+
 	// If it's a file path, load directly
 	if strings.Contains(templateName, "/") || strings.Contains(templateName, "\\") {
 		return tm.loadTemplateFile(templateName)
 	}
-	
+
 	// Otherwise, try to load from templates directory
 	return tm.loadTemplateByName(templateName)
 }
@@ -45,18 +45,18 @@ func (tm *TemplateManager) loadTemplateFile(filePath string) (string, error) {
 func (tm *TemplateManager) loadTemplateByName(templateName string) (string, error) {
 	// Try different file extensions
 	extensions := []string{".md", ".txt", ""}
-	
+
 	for _, ext := range extensions {
 		filename := templateName + ext
 		paths := tm.getTemplatePaths(filename)
-		
+
 		for _, path := range paths {
 			if content, err := os.ReadFile(path); err == nil {
 				return string(content), nil
 			}
 		}
 	}
-	
+
 	return "", fmt.Errorf("template '%s' not found in templates directory", templateName)
 }
 
@@ -74,9 +74,9 @@ func (tm *TemplateManager) getTemplatePaths(filename string) []string {
 func GetAvailableTemplates() ([]string, error) {
 	tm := NewTemplateManager()
 	var templates []string
-	
+
 	// Check templates directory
-	dirs := tm.getTemplateDirs() 
+	dirs := tm.getTemplateDirs()
 	for _, dir := range dirs {
 		if files, err := os.ReadDir(dir); err == nil {
 			for _, file := range files {
@@ -86,7 +86,7 @@ func GetAvailableTemplates() ([]string, error) {
 			}
 		}
 	}
-	
+
 	return templates, nil
 }
 
@@ -109,12 +109,12 @@ func isTemplateFile(filename string) bool {
 // CreateDefaultTemplate creates a default template if it doesn't exist
 func CreateDefaultTemplate() error {
 	tm := NewTemplateManager()
-	
+
 	// Create templates directory if it doesn't exist
 	if err := os.MkdirAll(tm.templateDir, 0755); err != nil {
 		return err
 	}
-	
+
 	defaultTemplatePath := filepath.Join(tm.templateDir, "default.md")
 	if _, err := os.Stat(defaultTemplatePath); os.IsNotExist(err) {
 		defaultContent := `# Description
@@ -137,6 +137,6 @@ func CreateDefaultTemplate() error {
 			return err
 		}
 	}
-	
+
 	return nil
 }

@@ -184,7 +184,6 @@ Please provide:
 Format in markdown:`, title, strings.Join(commits, "\n"), diffStats)
 }
 
-
 // GeneratePRDescriptionWithTemplate generates PR description using a template
 func (c *Client) GeneratePRDescriptionWithTemplate(title string, commits []string, diff string, diffStats string, template string) (string, error) {
 	prompt := c.buildPRTemplatePrompt(title, commits, diff, diffStats, template)
@@ -192,7 +191,23 @@ func (c *Client) GeneratePRDescriptionWithTemplate(title string, commits []strin
 	messages := []providers.Message{
 		{
 			Role:    "system",
-			Content: "You are a helpful assistant that generates comprehensive pull request descriptions following template structures.",
+			Content: `
+				---
+				Role: 
+					You are an AI assistant specialized in generating high-quality, consistent, and concise pull request (PR) descriptions. Your primary goal is to create descriptions that are incredibly helpful for reviewers, can be read and understood in less than 5 minutes, and serve as a valuable historical record.
+				---
+				Core Principles for the PR Description:
+					- Consistency: Always follow the provided template structure exactly. Do not invent new sections.
+					- Conciseness: Be direct and to the point. Use bullet points and avoid long, dense paragraphs. The total description should be scannable quickly.
+					- Helpfulness: Focus on the what, why, and how. Provide context that isn't immediately obvious from the code changes themselves.
+
+				---
+				Instructions:
+					- You will be given information about the code changes (e.g., file paths, a code diff, or a summary from the developer).
+					- Your task is to synthesize this information and populate the following template.
+					- Use clear, simple language. Assume the reviewer is skilled but may not have full context on the task.
+					- For the "Files Changed" section, group files logically (e.g., "Frontend Components," "API Endpoints," "Database Migrations") rather than listing every file individually.
+			`,
 		},
 		{
 			Role:    "user",

@@ -10,6 +10,7 @@ import (
 	"gommit/internal/git"
 	"gommit/pkg/ai"
 	"gommit/pkg/template"
+	"gommit/pkg/utils"
 	"log"
 	"os"
 	"os/exec"
@@ -18,13 +19,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
-
 var (
-	baseBranch    string
-	templateFile  string
-	outputFile    string
-	prTitle       string
-	skipReview    bool
+	baseBranch      string
+	templateFile    string
+	outputFile      string
+	prTitle         string
+	skipReview      bool
 	copyToClipboard bool
 )
 
@@ -51,16 +51,22 @@ to quickly create a Cobra application.`,
 			fmt.Println("Please run 'gitai init' to set up your configuration.")
 			os.Exit(1)
 		}
+		fmt.Println("🔍 Checking system requirements...")
 
-		// Initialize git operations
-		gitOps := &git.RealGitOperations{}
-
-		// Check if we're in a git repository
-		if !gitOps.IsGitRepository() {
-			fmt.Println("❌ Not a git repository")
-			os.Exit(1)
+		if utils.IsClipboardAvailable() {
+			fmt.Println("✅ Clipboard support: Available")
+		} else {
+			fmt.Println("⚠️  Clipboard support: Not available")
+			fmt.Printf("ℹ️  %s\n", utils.GetClipboardInfo())
 		}
 
+		// Check git
+		gitOps := &git.RealGitOperations{}
+		if gitOps.IsGitRepository() {
+			fmt.Println("✅ Git repository: Detected")
+		} else {
+			fmt.Println("⚠️  Git repository: Not detected (will need to be in a git repo to use commit/PR features)")
+		}
 		// Get current branch
 		currentBranch, err := gitOps.GetCurrentBranch()
 		if err != nil {
@@ -142,10 +148,12 @@ to quickly create a Cobra application.`,
 			fmt.Printf("💾 PR description saved to: %s\n", outputFile)
 		}
 
+		// Also update the clipboard usage in the main PR function:
 		if copyToClipboard {
 			fullPRContent := fmt.Sprintf("# %s\n\n%s", prTitle, prDescription)
 			if err := copyToClipboardUtil(fullPRContent); err != nil {
 				fmt.Printf("⚠️  Failed to copy to clipboard: %v\n", err)
+				fmt.Printf("ℹ️  %s\n", utils.GetClipboardInfo())
 			} else {
 				fmt.Println("📋 PR description copied to clipboard!")
 			}
@@ -219,10 +227,16 @@ func generatePRTitle(currentBranch string, commits []string) string {
 	return title
 }
 
+// Replace the copyToClipboardUtil function with:
 func copyToClipboardUtil(content string) error {
-	// Platform-specific clipboard implementation
-	// This is a simplified version - you'd need to implement for each OS
-	fmt.Println("⚠️  Clipboard copy not implemented in this version")
+	if !utils.IsClipboardAvailable() {
+		return fmt.Errorf("clipboard not available on this system")
+	}
+
+	if err := utils.CopyToClipboard(content); err != nil {
+		return fmt.Errorf("failed to copy to clipboard: %w", err)
+	}
+
 	return nil
 }
 
