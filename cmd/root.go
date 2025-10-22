@@ -100,12 +100,15 @@ to quickly create a Cobra application.`,
 			fmt.Println("🧠 Generating commit message with AI...")
 		}
 		
-		aiClient := ai.NewClient(cfg)
-		message, err := aiClient.GenerateCommitMessage(diff, context, cfg)
+		aiClient, err := ai.NewClient(cfg)
 		if err != nil {
-			log.Fatalf("❌ Error generating commit message: %v", err)
+				log.Fatalf("❌ Failed to initialize AI client: %v", err)
 		}
 
+		message, err := aiClient.GenerateCommitMessage(diff, context, &cfg.Commit)
+		if err != nil {
+				log.Fatalf("❌ Error generating commit message: %v", err)
+		}
 		// Display the generated message
 		fmt.Println("\n✨ Generated commit message:")
 		fmt.Println("┌─────────────────────────────────────────────────────────┐")

@@ -16,7 +16,7 @@ func RunAISetup() (*config.AI, error) {
 	// AI Provider Selection
 	providerPrompt := promptui.Select{
 		Label: "Select AI Provider",
-		Items: []string{"openai", "anthropic", "azure-openai"},
+		Items: []string{"openai", "anthropic", "deepseek"},
 	}
 
 	_, provider, err := providerPrompt.Run()
