@@ -15,7 +15,7 @@ func NewDeepSeekProvider(apiKey string) *DeepSeekProvider {
 	// DeepSeek uses OpenAI-compatible API
 	config := openai.DefaultConfig(apiKey)
 	config.BaseURL = "https://api.deepseek.com/v1" // DeepSeek API endpoint
-	
+
 	client := openai.NewClientWithConfig(config)
 	return &DeepSeekProvider{
 		client: client,

@@ -48,13 +48,12 @@ func ConfigExists() bool {
 	return false
 }
 
-
 // LoadConfig loads configuration from file
 func LoadConfig() (*Config, error) {
 	// Set up Viper
 	viper.SetConfigName(".gommit.config")
 	viper.SetConfigType("yaml")
-	
+
 	// Search paths: current directory, home directory
 	viper.AddConfigPath(".")
 	home, err := os.UserHomeDir()
@@ -128,7 +127,6 @@ func SaveConfig(cfg *Config) error {
 	return nil
 }
 
-
 type AI struct {
 	Provider    string  `yaml:"provider" mapstructure:"provider"`
 	APIKey      string  `yaml:"api_key" mapstructure:"api_key"`
@@ -148,32 +146,33 @@ func DefaultAIConfig() *AI {
 
 	return cfg
 }
+
 // Add this method to the Config struct
 func (c *Config) Validate() error {
-    // Validate AI configuration
-    if c.AI.APIKey == "" {
-        return fmt.Errorf("AI API key is required")
-    }
-    
-    // Add provider-specific validation if needed
-    switch c.AI.Provider {
-    case "openai":
-        if !strings.HasPrefix(c.AI.APIKey, "sk-") {
-            return fmt.Errorf("invalid OpenAI API key format")
-        }
-    case "anthropic":
-        if !strings.HasPrefix(c.AI.APIKey, "sk-ant-") {
-            return fmt.Errorf("invalid Anthropic API key format")
-        }
-    case "deepseek":
-        // DeepSeek keys don't have a specific format
-    case "azure-openai":
-        // Azure keys are typically base64 encoded
-    default:
-        return fmt.Errorf("unsupported AI provider: %s", c.AI.Provider)
-    }
-    
-    return nil
+	// Validate AI configuration
+	if c.AI.APIKey == "" {
+		return fmt.Errorf("AI API key is required")
+	}
+
+	// Add provider-specific validation if needed
+	switch c.AI.Provider {
+	case "openai":
+		if !strings.HasPrefix(c.AI.APIKey, "sk-") {
+			return fmt.Errorf("invalid OpenAI API key format")
+		}
+	case "anthropic":
+		if !strings.HasPrefix(c.AI.APIKey, "sk-ant-") {
+			return fmt.Errorf("invalid Anthropic API key format")
+		}
+	case "deepseek":
+		// DeepSeek keys don't have a specific format
+	case "azure-openai":
+		// Azure keys are typically base64 encoded
+	default:
+		return fmt.Errorf("unsupported AI provider: %s", c.AI.Provider)
+	}
+
+	return nil
 }
 
 type Commit struct {

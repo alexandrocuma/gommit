@@ -86,15 +86,15 @@ func (c *Client) buildCommitPrompt(diff string, data []string, commitCfg *config
 		prompt.WriteString("- Use conventional commit format (type: description)\n")
 		prompt.WriteString("- Common types: feat, fix, docs, style, refactor, test, chore\n")
 	}
-	
+
 	if commitCfg.Emoji {
 		prompt.WriteString("- Include relevant gitmoji at the start\n")
 	}
-	
+
 	prompt.WriteString("- Be descriptive but concise\n")
 	prompt.WriteString("- Focus on the what and why, not how\n")
 	prompt.WriteString("- Maximum 72 characters for subject line\n")
-	
+
 	if commitCfg.Language != "english" {
 		prompt.WriteString(fmt.Sprintf("- Write in %s\n", commitCfg.Language))
 	}
@@ -182,4 +182,67 @@ Please provide:
 5. Additional notes
 
 Format in markdown:`, title, strings.Join(commits, "\n"), diffStats)
+}
+
+
+// GeneratePRDescriptionWithTemplate generates PR description using a template
+func (c *Client) GeneratePRDescriptionWithTemplate(title string, commits []string, diff string, diffStats string, template string) (string, error) {
+	prompt := c.buildPRTemplatePrompt(title, commits, diff, diffStats, template)
+
+	messages := []providers.Message{
+		{
+			Role:    "system",
+			Content: "You are a helpful assistant that generates comprehensive pull request descriptions following template structures.",
+		},
+		{
+			Role:    "user",
+			Content: prompt,
+		},
+	}
+
+	req := &providers.ChatRequest{
+		Model:       c.cfg.Model,
+		Messages:    messages,
+		Temperature: c.cfg.Temperature,
+		MaxTokens:   c.cfg.MaxTokens,
+	}
+
+	ctx := context.Background()
+	resp, err := c.provider.CreateChatCompletion(ctx, req)
+	if err != nil {
+		return "", fmt.Errorf("AI completion failed: %w", err)
+	}
+
+	return strings.TrimSpace(resp.Content), nil
+}
+
+func (c *Client) buildPRTemplatePrompt(title string, commits []string, diff string, diffStats string, template string) string {
+	return fmt.Sprintf(`Generate a pull request description using the following template structure.
+
+PR Title: %s
+
+Commits in this PR:
+%s
+
+Change Statistics:
+%s
+
+Code Changes:
+%s
+
+Template to follow (fill in the sections, keep the markdown structure):
+%s
+
+Instructions:
+- Fill in each section of the template with relevant information
+- Keep the same markdown headers and structure
+- Be concise but comprehensive
+- For changelog, focus on user-facing changes
+- For test evidence, mention what was tested and how
+- Remove any placeholder comments like <!-- -->`,
+		title,
+		strings.Join(commits, "\n"),
+		diffStats,
+		"```diff\n"+diff+"\n```",
+		template)
 }

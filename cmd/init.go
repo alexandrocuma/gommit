@@ -49,7 +49,7 @@ to quickly create a Cobra application.`,
 		if err != nil {
 			log.Fatalf("❌ Failed to save configuration: %v", err)
 		}
-		
+
 		configPath := helpers.GetConfigPath()
 		fmt.Printf("✅ Configuration saved to: %s\n", configPath)
 		fmt.Println("\n🎉 Setup complete! You can now use GitAI CLI.")
