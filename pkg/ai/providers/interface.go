@@ -30,13 +30,13 @@ type ChatResponse struct {
 type Provider interface {
 	// Name returns the provider name
 	Name() string
-	
+
 	// CreateChatCompletion sends a chat completion request
 	CreateChatCompletion(ctx context.Context, req *ChatRequest) (*ChatResponse, error)
-	
+
 	// ValidateConfig validates the provider configuration
 	ValidateConfig(apiKey, model string) error
-	
+
 	// GetDefaultModel returns the default model for this provider
 	GetDefaultModel() string
 }

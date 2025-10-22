@@ -62,11 +62,23 @@ to quickly create a Cobra application.`,
 			os.Exit(1)
 		}
 
+		// Get current branch
+		currentBranch, err := gitOps.GetCurrentBranch()
+		if err != nil {
+			log.Fatalf("❌ Failed to get current branch: %v", err)
+		}
+
+		// Set default base branch if not provided
+		if baseBranch == "" {
+			baseBranch = getDefaultBaseBranch(gitOps)
+		}
+
+		fmt.Printf("📊 Comparing changes from '%s' to '%s'...\n", currentBranch, baseBranch)
 		// Get staged diff
 		if verbose {
 			fmt.Println("📊 Analyzing staged changes...")
 		}
-		
+
 		diff, err := gitOps.GetStagedDiff()
 		if err != nil {
 			log.Fatalf("❌ Error getting git diff: %v", err)
@@ -99,15 +111,15 @@ to quickly create a Cobra application.`,
 		if verbose {
 			fmt.Println("🧠 Generating commit message with AI...")
 		}
-		
+
 		aiClient, err := ai.NewClient(cfg)
 		if err != nil {
-				log.Fatalf("❌ Failed to initialize AI client: %v", err)
+			log.Fatalf("❌ Failed to initialize AI client: %v", err)
 		}
 
 		message, err := aiClient.GenerateCommitMessage(diff, context, &cfg.Commit)
 		if err != nil {
-				log.Fatalf("❌ Error generating commit message: %v", err)
+			log.Fatalf("❌ Error generating commit message: %v", err)
 		}
 		// Display the generated message
 		fmt.Println("\n✨ Generated commit message:")

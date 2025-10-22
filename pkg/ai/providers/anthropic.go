@@ -8,15 +8,15 @@ import (
 )
 
 type AnthropicProvider struct {
-	apiKey    string
-	baseURL   string
+	apiKey     string
+	baseURL    string
 	httpClient *http.Client
 }
 
 func NewAnthropicProvider(apiKey string) *AnthropicProvider {
 	return &AnthropicProvider{
-		apiKey:    apiKey,
-		baseURL:   "https://api.anthropic.com/v1",
+		apiKey:     apiKey,
+		baseURL:    "https://api.anthropic.com/v1",
 		httpClient: &http.Client{},
 	}
 }
@@ -84,10 +84,10 @@ type AnthropicMessage struct {
 }
 
 type AnthropicRequest struct {
-	Model       string              `json:"model"`
-	Messages    []AnthropicMessage  `json:"messages"`
-	MaxTokens   int                 `json:"max_tokens"`
-	Temperature float64             `json:"temperature,omitempty"`
+	Model       string             `json:"model"`
+	Messages    []AnthropicMessage `json:"messages"`
+	MaxTokens   int                `json:"max_tokens"`
+	Temperature float64            `json:"temperature,omitempty"`
 }
 
 type AnthropicResponse struct {

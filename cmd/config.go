@@ -30,7 +30,7 @@ to quickly create a Cobra application.`,
 
 		fmt.Println("📋 Current Gommit Configuration:")
 		fmt.Println("=================================")
-		
+
 		fmt.Printf("\n🤖 AI Settings:\n")
 		fmt.Printf("  Provider:    %s\n", cfg.AI.Provider)
 		fmt.Printf("  Model:       %s\n", cfg.AI.Model)
