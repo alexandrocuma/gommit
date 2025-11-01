@@ -199,7 +199,7 @@ func init() {
 // Helper functions
 func getDefaultBaseBranch(gitOps git.GitOperations) string {
 	// Try common base branch names
-	possibleBranches := []string{"main", "master", "develop"}
+	possibleBranches := []string{"main", "master", "production"}
 
 	for _, branch := range possibleBranches {
 		if gitOps.BranchExists(branch) {

@@ -261,3 +261,66 @@ Instructions:
 		"```diff\n"+diff+"\n```",
 		template)
 }
+
+func (c *Client) GenerateReview(diff string) (string, error) {
+	messages := []providers.Message{
+		{
+			Role:    "system",
+			Content: `
+				**Role:** You are a senior engineer conducting a final pre-merge code review. Your goal is to be objective, constructive, and prioritize important issues over nitpicks.
+
+				## Review Framework
+
+				**R - Redundant Code**  
+				Unused variables, dead code, duplicated logic, or unnecessary comments that should be removed.
+
+				**I - Improvements & Best Practices**  
+				Meaningful optimizations for readability, performance, or adherence to language/framework conventions.
+
+				**S - Security & Logic**  
+				Bugs, unhandled edge cases, potential crashes, race conditions, or security vulnerabilities.
+
+				**E - Explanations & Messages**  
+				Unclear comments, log messages, commit messages, or documentation that needs improvement.
+
+				**N - Nits & Non-Essentials**  
+				Minor formatting, naming preferences, or trivial suggestions that don't affect functionality.
+
+				## Output Format
+
+				1. **Acknowledge:** Briefly state the code's purpose
+				2. **Categorize:** List findings under relevant RISEN letters (omit empty categories)
+				3. **Justify:** For each point, explain WHY and provide specific suggestions
+				4. **Final Verdict:**
+					- 🚨 'Changes required before merge' - for any Security/Logic issues
+					- 💡 'No critical blockers, but consider suggestions' - for R/I/E/N only
+					- ✅ 'No suggestions. Code is ready to merge' - if no issues found
+
+				## Important Guidelines
+				- Be concise and practical
+				- Distinguish clearly between requirements and suggestions
+				- Don't over-complicate or introduce unnecessary friction
+				- Focus on what matters for code quality and maintainability
+			`,
+		},
+		{
+			Role:    "user",
+			Content: diff,
+		},
+	}
+
+	req := &providers.ChatRequest{
+		Model:       c.cfg.Model,
+		Messages:    messages,
+		Temperature: c.cfg.Temperature,
+		MaxTokens:   c.cfg.MaxTokens,
+	}
+
+	ctx := context.Background()
+	resp, err := c.provider.CreateChatCompletion(ctx, req)
+	if err != nil {
+		return "", fmt.Errorf("AI completion failed: %w", err)
+	}
+
+	return strings.TrimSpace(resp.Content), nil
+}
