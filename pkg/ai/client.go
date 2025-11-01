@@ -262,7 +262,7 @@ Instructions:
 		template)
 }
 
-func (c *Client) GenerateReview(diff string) (string, error) {
+func (c *Client) GeneratePRReview(diff string) (string, error) {
 	messages := []providers.Message{
 		{
 			Role:    "system",

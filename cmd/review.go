@@ -36,7 +36,7 @@ to quickly create a Cobra application.`,
 		// Check if AI is configured
 		if cfg.AI.APIKey == "" {
 			fmt.Println("❌ AI API key not configured.")
-			fmt.Println("Please run 'gitai init' to set up your configuration.")
+			fmt.Println("Please run 'gommit init' to set up your configuration.")
 			os.Exit(1)
 		}
 		fmt.Println("🔍 Checking system requirements...")
@@ -88,7 +88,7 @@ to quickly create a Cobra application.`,
 		}
 
 		// Generate PR description using template
-		prReview, err := aiClient.GenerateReview(diff)
+		prReview, err := aiClient.GeneratePRReview(diff)
 		if err != nil {
 			log.Fatalf("❌ Error generating PR description: %v", err)
 		}
@@ -105,9 +105,5 @@ to quickly create a Cobra application.`,
 func init() {
 	rootCmd.AddCommand(reviewCmd)
 
-	reviewCmd.Flags().StringVarP(&baseBranch, "base", "b", "", "Base branch to compare against (default: main/master)")
-	reviewCmd.Flags().StringVarP(&templateFile, "template", "t", "default", "Template name or path to template file")
-	reviewCmd.Flags().StringVarP(&outputFile, "output", "o", "", "Output file to save PR description")
-	reviewCmd.Flags().BoolVar(&skipReview, "skip-review", false, "Skip interactive review and editing")
-	reviewCmd.Flags().BoolVarP(&copyToClipboard, "clipboard", "c", false, "Copy PR description to clipboard")
+	reviewCmd.Flags().StringVarP(&baseBranch, "base", "b", "", "Base branch to compare against (default: main/master/production)")
 }
