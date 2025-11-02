@@ -1,5 +1,5 @@
 /*
-Copyright © 2025 NAME HERE <EMAIL ADDRESS>
+Copyright © 2025 Alexandro Cu alexandro.cuma@gmail.com
 */
 package cmd
 
@@ -29,7 +29,7 @@ to quickly create a Cobra application.`,
 		}
 
 		fmt.Println("📋 Current Gommit Configuration:")
-		fmt.Println("=================================")
+		fmt.Println("────────────────────────────────")
 
 		fmt.Printf("\n🤖 AI Settings:\n")
 		fmt.Printf("  Provider:    %s\n", cfg.AI.Provider)
@@ -49,14 +49,4 @@ to quickly create a Cobra application.`,
 
 func init() {
 	rootCmd.AddCommand(configCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// configCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// configCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

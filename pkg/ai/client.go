@@ -190,7 +190,7 @@ func (c *Client) GeneratePRDescriptionWithTemplate(title string, commits []strin
 
 	messages := []providers.Message{
 		{
-			Role:    "system",
+			Role: "system",
 			Content: `
 				---
 				Role: 
@@ -265,7 +265,7 @@ Instructions:
 func (c *Client) GeneratePRReview(diff string) (string, error) {
 	messages := []providers.Message{
 		{
-			Role:    "system",
+			Role: "system",
 			Content: `
 				**Role:** You are a senior engineer conducting a final pre-merge code review. Your goal is to be objective, constructive, and prioritize important issues over nitpicks.
 

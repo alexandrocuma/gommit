@@ -10,10 +10,8 @@ import (
 	"github.com/manifoldco/promptui"
 )
 
-// RunSetup runs the interactive configuration setup
 func RunAISetup() (*config.AI, error) {
 	cfg := config.DefaultAIConfig()
-	// AI Provider Selection
 	providerPrompt := promptui.Select{
 		Label: "Select AI Provider",
 		Items: []string{"openai", "anthropic", "deepseek"},
@@ -26,7 +24,6 @@ func RunAISetup() (*config.AI, error) {
 
 	cfg.Provider = provider
 
-	// API Key
 	apiKeyPrompt := promptui.Prompt{
 		Label: fmt.Sprintf("Enter your %s API Key", strings.ToUpper(provider)),
 		Mask:  '*',
@@ -44,7 +41,6 @@ func RunAISetup() (*config.AI, error) {
 	}
 	cfg.APIKey = apiKey
 
-	// Model Selection
 	modelPrompt := promptui.Prompt{
 		Label:   "AI Model",
 		Default: cfg.Model,

@@ -1,5 +1,5 @@
 /*
-Copyright © 2025 NAME HERE <EMAIL ADDRESS>
+Copyright © 2025 Alexandro Cu alexandro.cuma@gmail.com
 */
 package cmd
 
@@ -25,15 +25,24 @@ var (
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "gommit",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
+	Short: "Generate AI-powered commit messages for staged changes",
+	Long: `Automatically generate meaningful commit messages using AI based on your staged changes.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
+		This command analyzes your git diff, understands the context of your changes,
+		and creates a descriptive commit message that follows conventional commit standards.
+
+		Features:
+		• Analyzes staged changes and git context
+		• Supports multiple AI providers (OpenAI, Anthropic, etc.)
+		• Follows your preferred commit style (conventional, semantic, etc.)
+		• Interactive confirmation before committing
+		• Configurable base branch comparison
+
+		Examples:
+			git add . && gommit       # Commit all staged changes
+			gommit --verbose          # Show detailed process
+			gommit --no-confirm       # Skip confirmation prompt
+			gommit --base main        # Compare against main branch`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// Load configuration
 		cfg, err := config.LoadConfig()
@@ -41,12 +50,7 @@ to quickly create a Cobra application.`,
 			log.Fatalf("❌ Failed to load configuration: %v", err)
 		}
 
-		// Check if AI is configured
-		if cfg.AI.APIKey == "" {
-			fmt.Println("❌ AI API key not configured.")
-			fmt.Println("Please run 'gitai init' to set up your configuration.")
-			os.Exit(1)
-		}
+		cfg.ValidateAIConfig()
 
 		if verbose {
 			fmt.Printf("🤖 Using AI provider: %s\n", cfg.AI.Provider)
@@ -70,11 +74,11 @@ to quickly create a Cobra application.`,
 
 		// Set default base branch if not provided
 		if baseBranch == "" {
-			baseBranch = getDefaultBaseBranch(gitOps)
+			baseBranch = gitOps.GetDefaultBaseBranch()
 		}
 
 		fmt.Printf("📊 Comparing changes from '%s' to '%s'...\n", currentBranch, baseBranch)
-		// Get staged diff
+
 		if verbose {
 			fmt.Println("📊 Analyzing staged changes...")
 		}
@@ -82,12 +86,6 @@ to quickly create a Cobra application.`,
 		diff, err := gitOps.GetStagedDiff()
 		if err != nil {
 			log.Fatalf("❌ Error getting git diff: %v", err)
-		}
-
-		if diff == "" {
-			fmt.Println("❌ No staged changes found.")
-			fmt.Println("   Please stage your changes first: git add <files>")
-			os.Exit(1)
 		}
 
 		// Get context for better commit messages
@@ -121,13 +119,12 @@ to quickly create a Cobra application.`,
 		if err != nil {
 			log.Fatalf("❌ Error generating commit message: %v", err)
 		}
-		// Display the generated message
-		fmt.Println("\n✨ Generated commit message:")
-		fmt.Println("┌─────────────────────────────────────────────────────────┐")
-		fmt.Printf("│ %s\n", message)
-		fmt.Println("└─────────────────────────────────────────────────────────┘")
 
-		// Ask for confirmation unless skipped
+		fmt.Println("\n✨ Generated commit message:")
+		fmt.Printf("┌─%s─┐\n", strings.Repeat("─", len(message)))
+		fmt.Printf("│ %s │\n", message)
+		fmt.Printf("└─%s─┘\n", strings.Repeat("─", len(message)))
+
 		if !skipConfirm {
 			fmt.Print("\n✅ Commit with this message? [Y/n]: ")
 			scanner := bufio.NewScanner(os.Stdin)
@@ -140,8 +137,8 @@ to quickly create a Cobra application.`,
 			}
 		}
 
-		// Perform the commit
-		if err := gitOps.Commit(message); err != nil {
+		err = gitOps.Commit(message)
+		if err != nil {
 			log.Fatalf("❌ Error committing: %v", err)
 		}
 
@@ -149,8 +146,6 @@ to quickly create a Cobra application.`,
 	},
 }
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	err := rootCmd.Execute()
 	if err != nil {
@@ -159,14 +154,6 @@ func Execute() {
 }
 
 func init() {
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.convmit.yaml)")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
 	rootCmd.Flags().BoolVarP(&skipConfirm, "yes", "y", false, "Skip confirmation and commit immediately")
 	rootCmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "Show verbose output")
 }

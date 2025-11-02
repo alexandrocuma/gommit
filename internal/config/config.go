@@ -17,9 +17,7 @@ type Config struct {
 func DefaultConfig() *Config {
 	cfg := &Config{}
 
-	// AI defaults
 	cfg.AI = *DefaultAIConfig()
-	// Commit defaults
 	cfg.Commit = *DefaultCommitConfig()
 
 	return cfg
@@ -40,7 +38,8 @@ func ConfigExists() bool {
 	}
 
 	for _, loc := range locations {
-		if _, err := os.Stat(loc); err == nil {
+		_, err := os.Stat(loc);
+		if err == nil {
 			return true
 		}
 	}
@@ -76,7 +75,6 @@ func LoadConfig() (*Config, error) {
 	// Try to read config
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			// Config file not found, return default config
 			return DefaultConfig(), nil
 		}
 		return nil, fmt.Errorf("error reading config file: %w", err)
@@ -90,9 +88,7 @@ func LoadConfig() (*Config, error) {
 	return &cfg, nil
 }
 
-// SaveConfig saves configuration to file
 func SaveConfig(cfg *Config) error {
-	// Convert config to Viper
 	viper.Set("ai.provider", cfg.AI.Provider)
 	viper.Set("ai.api_key", cfg.AI.APIKey)
 	viper.Set("ai.model", cfg.AI.Model)
