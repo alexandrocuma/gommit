@@ -2,6 +2,7 @@ package git
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"strings"
 )
@@ -21,6 +22,21 @@ type GitOperations interface {
 
 type RealGitOperations struct{}
 
+// Helper functions
+func (g *RealGitOperations) GetDefaultBaseBranch() string {
+	// Try common base branch names
+	possibleBranches := []string{"main", "master", "production"}
+
+	for _, branch := range possibleBranches {
+		if g.BranchExists(branch) {
+			return branch
+		}
+	}
+
+	// Fallback to main
+	return "main"
+}
+
 func (g *RealGitOperations) IsGitRepository() bool {
 	cmd := exec.Command("git", "rev-parse", "--git-dir")
 	return cmd.Run() == nil
@@ -28,11 +44,20 @@ func (g *RealGitOperations) IsGitRepository() bool {
 
 func (g *RealGitOperations) GetStagedDiff() (string, error) {
 	cmd := exec.Command("git", "diff", "--staged")
+
 	output, err := cmd.Output()
 	if err != nil {
 		return "", fmt.Errorf("failed to get staged diff: %w", err)
 	}
-	return string(output), nil
+
+	diff := string(output)
+	if diff == "" {
+		fmt.Println("❌ No staged changes found.")
+		fmt.Println("   Please stage your changes first: git add <files>")
+		os.Exit(1)
+	}
+
+	return diff, nil
 }
 
 func (g *RealGitOperations) GetCurrentBranch() (string, error) {
@@ -67,11 +92,20 @@ func (g *RealGitOperations) Commit(message string) error {
 // NEW: Get diff between two branches
 func (g *RealGitOperations) GetDiffBetweenBranches(baseBranch, compareBranch string) (string, error) {
 	cmd := exec.Command("git", "diff", fmt.Sprintf("%s..%s", baseBranch, compareBranch))
+
 	output, err := cmd.Output()
 	if err != nil {
 		return "", fmt.Errorf("failed to get diff between branches: %w", err)
 	}
-	return string(output), nil
+
+	diff := string(output)
+	if diff == "" {
+		fmt.Println("❌ No staged changes found.")
+		fmt.Println("   Please stage your changes first: git add <files>")
+		os.Exit(1)
+	}
+
+	return diff, nil
 }
 
 // NEW: Get commit history between branches

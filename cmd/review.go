@@ -1,5 +1,5 @@
 /*
-Copyright © 2025 NAME HERE <EMAIL ADDRESS>
+Copyright © 2025 Alexandro Cu alexandro.cuma@gmail.com
 */
 package cmd
 
@@ -19,13 +19,29 @@ import (
 // reviewCmd represents the review command
 var reviewCmd = &cobra.Command{
 	Use:   "review",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "Generate AI-powered PR descriptions from branch differences",
+	Long: `Automatically create comprehensive PR descriptions using AI by analyzing changes between branches.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+		This command compares your current branch with a base branch, analyzes the code differences,
+		and generates a detailed PR description including summary, changes, and potential improvements.
+
+		Features:
+		• Compares changes between current branch and base branch
+		• Generates comprehensive PR descriptions with AI
+		• Includes code analysis and improvement suggestions
+		• Works with your configured AI provider
+		• Automatically detects git repository and branches
+
+		Examples:
+			gommit review                   # Compare with default base branch
+			gommit review --base main       # Compare with main branch
+			gommit review --base develop    # Compare with develop branch
+
+		The generated PR description includes:
+		• Overview of changes
+		• Code analysis and impact
+		• Potential issues or improvements
+		• Ready-to-use PR description text`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// Load configuration
 		cfg, err := config.LoadConfig()
@@ -33,12 +49,8 @@ to quickly create a Cobra application.`,
 			log.Fatalf("❌ Failed to load configuration: %v", err)
 		}
 
-		// Check if AI is configured
-		if cfg.AI.APIKey == "" {
-			fmt.Println("❌ AI API key not configured.")
-			fmt.Println("Please run 'gommit init' to set up your configuration.")
-			os.Exit(1)
-		}
+		cfg.ValidateAIConfig()
+
 		fmt.Println("🔍 Checking system requirements...")
 
 		if utils.IsClipboardAvailable() {
@@ -50,10 +62,10 @@ to quickly create a Cobra application.`,
 
 		// Check git
 		gitOps := &git.RealGitOperations{}
-		if gitOps.IsGitRepository() {
-			fmt.Println("✅ Git repository: Detected")
-		} else {
-			fmt.Println("⚠️  Git repository: Not detected (will need to be in a git repo to use commit/PR features)")
+
+		if !gitOps.IsGitRepository() {
+			fmt.Println("❌ Not a git repository")
+			os.Exit(1)
 		}
 		// Get current branch
 		currentBranch, err := gitOps.GetCurrentBranch()
@@ -63,7 +75,7 @@ to quickly create a Cobra application.`,
 
 		// Set default base branch if not provided
 		if baseBranch == "" {
-			baseBranch = getDefaultBaseBranch(gitOps)
+			baseBranch = gitOps.GetDefaultBaseBranch()
 		}
 
 		fmt.Printf("📊 Comparing changes from '%s' to '%s'...\n", currentBranch, baseBranch)
@@ -72,12 +84,6 @@ to quickly create a Cobra application.`,
 		diff, err := gitOps.GetDiffBetweenBranches(baseBranch, currentBranch)
 		if err != nil {
 			log.Fatalf("❌ Failed to get diff: %v", err)
-		}
-
-		if diff == "" {
-			fmt.Println("❌ No changes found between branches.")
-			fmt.Println("   Make sure you have committed your changes and the branches are different.")
-			os.Exit(1)
 		}
 
 		// Initialize AI client

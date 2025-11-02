@@ -1,5 +1,5 @@
 /*
-Copyright © 2025 NAME HERE <EMAIL ADDRESS>
+Copyright © 2025 Alexandro Cu alexandro.cuma@gmail.com
 */
 package cmd
 
@@ -45,12 +45,8 @@ to quickly create a Cobra application.`,
 			log.Fatalf("❌ Failed to load configuration: %v", err)
 		}
 
-		// Check if AI is configured
-		if cfg.AI.APIKey == "" {
-			fmt.Println("❌ AI API key not configured.")
-			fmt.Println("Please run 'gitai init' to set up your configuration.")
-			os.Exit(1)
-		}
+		cfg.ValidateAIConfig()
+
 		fmt.Println("🔍 Checking system requirements...")
 
 		if utils.IsClipboardAvailable() {
@@ -62,11 +58,11 @@ to quickly create a Cobra application.`,
 
 		// Check git
 		gitOps := &git.RealGitOperations{}
-		if gitOps.IsGitRepository() {
-			fmt.Println("✅ Git repository: Detected")
-		} else {
-			fmt.Println("⚠️  Git repository: Not detected (will need to be in a git repo to use commit/PR features)")
+		if !gitOps.IsGitRepository() {
+			fmt.Println("❌ Not a git repository")
+			os.Exit(1)
 		}
+
 		// Get current branch
 		currentBranch, err := gitOps.GetCurrentBranch()
 		if err != nil {
@@ -75,7 +71,7 @@ to quickly create a Cobra application.`,
 
 		// Set default base branch if not provided
 		if baseBranch == "" {
-			baseBranch = getDefaultBaseBranch(gitOps)
+			baseBranch = gitOps.GetDefaultBaseBranch()
 		}
 
 		fmt.Printf("📊 Comparing changes from '%s' to '%s'...\n", currentBranch, baseBranch)
@@ -84,12 +80,6 @@ to quickly create a Cobra application.`,
 		diff, err := gitOps.GetDiffBetweenBranches(baseBranch, currentBranch)
 		if err != nil {
 			log.Fatalf("❌ Failed to get diff: %v", err)
-		}
-
-		if diff == "" {
-			fmt.Println("❌ No changes found between branches.")
-			fmt.Println("   Make sure you have committed your changes and the branches are different.")
-			os.Exit(1)
 		}
 
 		// Get commit history
@@ -194,21 +184,6 @@ func init() {
 	draftCmd.Flags().StringVarP(&prTitle, "title", "T", "", "PR title (default: auto-generated from branch name)")
 	draftCmd.Flags().BoolVar(&skipReview, "skip-review", false, "Skip interactive review and editing")
 	draftCmd.Flags().BoolVarP(&copyToClipboard, "clipboard", "c", false, "Copy PR description to clipboard")
-}
-
-// Helper functions
-func getDefaultBaseBranch(gitOps git.GitOperations) string {
-	// Try common base branch names
-	possibleBranches := []string{"main", "master", "production"}
-
-	for _, branch := range possibleBranches {
-		if gitOps.BranchExists(branch) {
-			return branch
-		}
-	}
-
-	// Fallback to main
-	return "main"
 }
 
 func generatePRTitle(currentBranch string, commits []string) string {
