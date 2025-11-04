@@ -38,7 +38,7 @@ func ConfigExists() bool {
 	}
 
 	for _, loc := range locations {
-		_, err := os.Stat(loc);
+		_, err := os.Stat(loc)
 		if err == nil {
 			return true
 		}

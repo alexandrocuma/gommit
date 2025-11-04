@@ -5,6 +5,10 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+
+	"github.com/anthropics/anthropic-sdk-go"
+	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/packages/param"
 )
 
 type AnthropicProvider struct {
@@ -13,71 +17,6 @@ type AnthropicProvider struct {
 	httpClient *http.Client
 }
 
-func NewAnthropicProvider(apiKey string) *AnthropicProvider {
-	return &AnthropicProvider{
-		apiKey:     apiKey,
-		baseURL:    "https://api.anthropic.com/v1",
-		httpClient: &http.Client{},
-	}
-}
-
-func (p *AnthropicProvider) Name() string {
-	return "anthropic"
-}
-
-func (p *AnthropicProvider) ValidateConfig(apiKey, model string) error {
-	if apiKey == "" {
-		return fmt.Errorf("Anthropic API key is required")
-	}
-	if !strings.HasPrefix(apiKey, "sk-ant-") {
-		return fmt.Errorf("invalid Anthropic API key format")
-	}
-	return nil
-}
-
-func (p *AnthropicProvider) GetDefaultModel() string {
-	return "claude-3-sonnet-20240229"
-}
-
-func (p *AnthropicProvider) CreateChatCompletion(ctx context.Context, req *ChatRequest) (*ChatResponse, error) {
-	// Convert messages to Anthropic format
-	var anthropicMessages []AnthropicMessage
-	for _, msg := range req.Messages {
-		anthropicMessages = append(anthropicMessages, AnthropicMessage{
-			Role:    msg.Role,
-			Content: msg.Content,
-		})
-	}
-
-	// Prepare Anthropic request
-	anthropicReq := AnthropicRequest{
-		Model:       req.Model,
-		Messages:    anthropicMessages,
-		MaxTokens:   req.MaxTokens,
-		Temperature: req.Temperature,
-	}
-
-	// Make HTTP request to Anthropic API
-	response, err := p.makeRequest(ctx, anthropicReq)
-	if err != nil {
-		return nil, fmt.Errorf("Anthropic API error: %w", err)
-	}
-
-	return &ChatResponse{
-		Content: response.Content[0].Text,
-		Usage: struct {
-			PromptTokens     int `json:"prompt_tokens"`
-			CompletionTokens int `json:"completion_tokens"`
-			TotalTokens      int `json:"total_tokens"`
-		}{
-			PromptTokens:     response.Usage.InputTokens,
-			CompletionTokens: response.Usage.OutputTokens,
-			TotalTokens:      response.Usage.InputTokens + response.Usage.OutputTokens,
-		},
-	}, nil
-}
-
-// Anthropic-specific types
 type AnthropicMessage struct {
 	Role    string `json:"role"`
 	Content string `json:"content"`
@@ -100,8 +39,89 @@ type AnthropicResponse struct {
 	} `json:"usage"`
 }
 
-func (p *AnthropicProvider) makeRequest(ctx context.Context, req AnthropicRequest) (*AnthropicResponse, error) {
-	// Implementation for making HTTP request to Anthropic API
-	// This is a simplified version - you'd need to implement the actual HTTP call
-	return nil, fmt.Errorf("Anthropic provider not fully implemented")
+func NewAnthropicProvider(apiKey string) *AnthropicProvider {
+	return &AnthropicProvider{
+		apiKey:     apiKey,
+		baseURL:    "https://api.anthropic.com/v1/messages",
+		httpClient: &http.Client{},
+	}
+}
+
+func (p *AnthropicProvider) Name() string {
+	return "anthropic"
+}
+
+func (p *AnthropicProvider) ValidateConfig(apiKey, model string) error {
+	if apiKey == "" {
+		return fmt.Errorf("anthropic API key is required")
+	}
+	if !strings.HasPrefix(apiKey, "sk-ant-") {
+		return fmt.Errorf("invalid Anthropic API key format")
+	}
+	return nil
+}
+
+func (p *AnthropicProvider) GetDefaultModel() string {
+	return "claude-3-sonnet-20240229"
+}
+
+func (p *AnthropicProvider) CreateChatCompletion(ctx context.Context, req *ChatRequest) (*ChatResponse, error) {
+    client := anthropic.NewClient(
+			option.WithAPIKey(p.apiKey),
+		)
+    
+    // Separate system messages from conversation messages
+    var systemContent string
+    var conversationMessages []anthropic.MessageParam
+    
+    for _, msg := range req.Messages {
+        switch msg.Role {
+        case "system":
+            // Combine all system messages
+            if systemContent != "" {
+                systemContent += "\n"
+            }
+            systemContent += msg.Content
+        case "user":
+            conversationMessages = append(conversationMessages, 
+                anthropic.NewUserMessage(anthropic.NewTextBlock(msg.Content)))
+        case "assistant":
+            conversationMessages = append(conversationMessages, 
+                anthropic.NewAssistantMessage(anthropic.NewTextBlock(msg.Content)))
+        }
+    }
+    
+    // Build the request parameters
+    params := anthropic.MessageNewParams{
+        Model:     anthropic.Model(req.Model),
+        MaxTokens: int64(req.MaxTokens),
+        Messages:  conversationMessages,
+				Temperature: param.Opt[float64]{Value: req.Temperature},
+    }
+    
+    // Add system message if present
+    if systemContent != "" {
+        params.System = []anthropic.TextBlockParam{
+            {Type: "text", Text: systemContent},
+        }
+    }
+    
+    // Make the API call
+    response, err := client.Messages.New(ctx, params)
+    if err != nil {
+        return nil, fmt.Errorf("anthropic API error: %w", err)
+    }
+    
+    return &ChatResponse{
+        Content: response.Content[0].Text,
+        Usage: struct {
+            PromptTokens     int `json:"prompt_tokens"`
+            CompletionTokens int `json:"completion_tokens"`
+            TotalTokens      int `json:"total_tokens"`
+        }{
+            PromptTokens:     int(response.Usage.InputTokens),
+            CompletionTokens: int(response.Usage.OutputTokens),
+            TotalTokens:      int(response.Usage.InputTokens + response.Usage.OutputTokens),
+        },
+    }, nil
 }
