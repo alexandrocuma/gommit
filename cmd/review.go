@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"gommit/internal/config"
 	"gommit/internal/git"
+	"gommit/internal/helpers"
 	"gommit/pkg/ai"
 	"gommit/pkg/utils"
 	"log"
@@ -99,11 +100,14 @@ var reviewCmd = &cobra.Command{
 			log.Fatalf("❌ Error generating PR description: %v", err)
 		}
 
+		out, err := helpers.RenderMarkdown(prReview)
+    if err != nil {
+      out = prReview
+    }
+
 		// Display results
 		fmt.Println("\n" + strings.Repeat("━", 60))
-		fmt.Println("📋 PR Review generated")
-		fmt.Println(strings.Repeat("━", 60))
-		fmt.Println(prReview)
+    fmt.Print(out)
 		fmt.Println(strings.Repeat("━", 60))
 	},
 }
