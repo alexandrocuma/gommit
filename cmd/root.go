@@ -4,7 +4,6 @@ Copyright © 2025 Alexandro Cu alexandro.cuma@gmail.com
 package cmd
 
 import (
-	"bufio"
 	"fmt"
 	"gommit/internal/config"
 	"gommit/internal/git"
@@ -13,6 +12,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 )
 
@@ -124,12 +124,13 @@ var rootCmd = &cobra.Command{
 		fmt.Printf("└─%s─┘\n", strings.Repeat("─", len(message)))
 
 		if !skipConfirm {
-			fmt.Print("\n✅ Commit with this message? [Y/n]: ")
-			scanner := bufio.NewScanner(os.Stdin)
-			scanner.Scan()
-			response := strings.ToLower(strings.TrimSpace(scanner.Text()))
+			prompt := promptui.Prompt{
+				Label:     "✅ Commit with this message?",
+				IsConfirm: true,
+			}
 
-			if response == "n" || response == "no" {
+			_, err := prompt.Run()
+			if err != nil {
 				fmt.Println("Commit cancelled.")
 				return
 			}
