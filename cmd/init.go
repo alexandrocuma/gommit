@@ -49,7 +49,7 @@ to quickly create a Cobra application.`,
 
 		configPath := helpers.GetConfigPath()
 		fmt.Printf("✅ Configuration saved to: %s\n", configPath)
-		fmt.Println("\n🎉 Setup complete! You can now use GitAI CLI.")
+		fmt.Println("\n🎉 Setup complete! You can now use gommit CLI.")
 		fmt.Println("\nNext steps:")
 		fmt.Println("  gommit     		 # Generate AI-powered commit messages")
 		fmt.Println("  gommit draft    # Generate a PR description")

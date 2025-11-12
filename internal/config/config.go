@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/spf13/viper"
 )
@@ -15,30 +14,39 @@ type Config struct {
 }
 
 func DefaultConfig() *Config {
-	cfg := &Config{}
-
-	cfg.AI = *DefaultAIConfig()
-	cfg.Commit = *DefaultCommitConfig()
-
-	return cfg
+	return &Config{
+		AI:     *DefaultAIConfig(),
+		Commit: *DefaultCommitConfig(),
+	}
 }
 
-// ConfigExists checks if a configuration file exists
+// getDefaultConfigPath returns the preferred default config path: ~/.gommit/.gommit.config.yaml
+func getDefaultConfigPath() (string, error) {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", fmt.Errorf("error getting home directory: %w", err)
+	}
+	return filepath.Join(home, ".gommit", ".gommit.config.yaml"), nil
+}
+
+// ConfigExists checks if a configuration file exists in standard locations:
+// 1. ./gommit/.gommit.config.yaml (relative to current directory)
+// 2. ~/.gommit/.gommit.config.yaml (in user's home directory)
 func ConfigExists() bool {
-	configPath := viper.ConfigFileUsed()
-	if configPath != "" {
-		_, err := os.Stat(configPath)
-		return err == nil
+	// Check current working directory subdirectory
+	cwd, err := os.Getwd()
+	if err == nil {
+		currentDirPath := filepath.Join(cwd, "gommit", ".gommit.config.yaml")
+		_, err := os.Stat(currentDirPath)
+		if err == nil {
+			return true
+		}
 	}
 
-	// Check common locations
-	locations := []string{
-		".gommit.config.yaml",
-		filepath.Join(os.Getenv("HOME"), ".gommit.config.yaml"),
-	}
-
-	for _, loc := range locations {
-		_, err := os.Stat(loc);
+	// Check home directory
+	homePath, err := getDefaultConfigPath()
+	if err == nil {
+		_, err := os.Stat(homePath)
 		if err == nil {
 			return true
 		}
@@ -47,143 +55,77 @@ func ConfigExists() bool {
 	return false
 }
 
-// LoadConfig loads configuration from file
+// LoadConfig loads configuration from file with the following precedence:
+// 1. ./gommit/.gommit.config.yaml
+// 2. ~/.gommit/.gommit.config.yaml
+// If no config file is found, returns default configuration
 func LoadConfig() (*Config, error) {
-	// Set up Viper
+	// Configure Viper to look for .gommit.config.yaml files
 	viper.SetConfigName(".gommit.config")
 	viper.SetConfigType("yaml")
 
-	// Search paths: current directory, home directory
-	viper.AddConfigPath(".")
+	// Add search paths in order of precedence
+	viper.AddConfigPath("./gommit") // Will look for ./gommit/.gommit.config.yaml
 	home, err := os.UserHomeDir()
 	if err == nil {
-		viper.AddConfigPath(home)
+		viper.AddConfigPath(filepath.Join(home, ".gommit")) // Will look for ~/.gommit/.gommit.config.yaml
 	}
 
-	// Set defaults
-	viper.SetDefault("ai.provider", "openai")
-	viper.SetDefault("ai.model", "gpt-4")
-	viper.SetDefault("ai.temperature", 0.7)
-	viper.SetDefault("ai.max_tokens", 500)
-	viper.SetDefault("commit.conventional", true)
-	viper.SetDefault("commit.emoji", true)
-	viper.SetDefault("commit.language", "english")
-	viper.SetDefault("pr.template", "default")
-	viper.SetDefault("pr.auto_assign", false)
-	viper.SetDefault("pr.include_tests", true)
+	// Set default values
+	viper.SetDefault("ai", DefaultAIConfig())
+	viper.SetDefault("commit", DefaultCommitConfig())
 
-	// Try to read config
-	if err := viper.ReadInConfig(); err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+	// Attempt to read config file
+	err = viper.ReadInConfig();
+	if err != nil {
+		_, ok := err.(viper.ConfigFileNotFoundError)
+		if ok {
+			// Config file not found, return defaults
 			return DefaultConfig(), nil
 		}
 		return nil, fmt.Errorf("error reading config file: %w", err)
 	}
 
+	// Unmarshal config into struct
 	var cfg Config
-	if err := viper.Unmarshal(&cfg); err != nil {
+	err = viper.Unmarshal(&cfg)
+	if err != nil {
 		return nil, fmt.Errorf("error unmarshaling config: %w", err)
 	}
 
 	return &cfg, nil
 }
 
+// SaveConfig saves configuration to file.
+// If a config file was previously loaded, it saves to the same location.
+// Otherwise, it saves to ~/.gommit/.gommit.config.yaml
 func SaveConfig(cfg *Config) error {
-	viper.Set("ai.provider", cfg.AI.Provider)
-	viper.Set("ai.api_key", cfg.AI.APIKey)
-	viper.Set("ai.model", cfg.AI.Model)
-	viper.Set("ai.temperature", cfg.AI.Temperature)
-	viper.Set("ai.max_tokens", cfg.AI.MaxTokens)
-	viper.Set("commit.conventional", cfg.Commit.Conventional)
-	viper.Set("commit.emoji", cfg.Commit.Emoji)
-	viper.Set("commit.language", cfg.Commit.Language)
+	viper.Set("ai", cfg.AI)
+	viper.Set("commit", cfg.Commit)
 
-	// Determine config file path
+	// Determine where to save
 	configPath := viper.ConfigFileUsed()
 	if configPath == "" {
-		// Use home directory as default location
-		home, err := os.UserHomeDir()
+		// No config was loaded, use default home directory location
+		var err error
+		configPath, err = getDefaultConfigPath()
 		if err != nil {
-			return fmt.Errorf("error getting home directory: %w", err)
+			return err
 		}
-		configPath = filepath.Join(home, ".gommit.config.yaml")
 	}
 
-	// Ensure the directory exists
-	dir := filepath.Dir(configPath)
-	if err := os.MkdirAll(dir, 0755); err != nil {
-		return fmt.Errorf("error creating config directory: %w", err)
+	// Ensure target directory exists
+	configDir := filepath.Dir(configPath)
+	err := os.MkdirAll(configDir, 0755)
+	if err != nil {
+		return fmt.Errorf("error creating config directory %q: %w", configDir, err)
 	}
 
 	// Write config file
-	if err := viper.WriteConfigAs(configPath); err != nil {
-		return fmt.Errorf("error writing config file: %w", err)
+	err = viper.WriteConfigAs(configPath)
+	if err != nil {
+		return fmt.Errorf("error writing config file %q: %w", configPath, err)
 	}
 
 	return nil
-}
-
-type AI struct {
-	Provider    string  `yaml:"provider" mapstructure:"provider"`
-	APIKey      string  `yaml:"api_key" mapstructure:"api_key"`
-	Model       string  `yaml:"model" mapstructure:"model"`
-	Temperature float64 `yaml:"temperature" mapstructure:"temperature"`
-	MaxTokens   int     `yaml:"max_tokens" mapstructure:"max_tokens"`
-}
-
-func DefaultAIConfig() *AI {
-	cfg := &AI{}
-
-	// AI defaults
-	cfg.Provider = "openai"
-	cfg.Model = "gpt-4"
-	cfg.Temperature = 0.7
-	cfg.MaxTokens = 500
-
-	return cfg
-}
-
-// Add this method to the Config struct
-func (c *Config) Validate() error {
-	// Validate AI configuration
-	if c.AI.APIKey == "" {
-		return fmt.Errorf("AI API key is required")
-	}
-
-	// Add provider-specific validation if needed
-	switch c.AI.Provider {
-	case "openai":
-		if !strings.HasPrefix(c.AI.APIKey, "sk-") {
-			return fmt.Errorf("invalid OpenAI API key format")
-		}
-	case "anthropic":
-		if !strings.HasPrefix(c.AI.APIKey, "sk-ant-") {
-			return fmt.Errorf("invalid Anthropic API key format")
-		}
-	case "deepseek":
-		// DeepSeek keys don't have a specific format
-	case "azure-openai":
-		// Azure keys are typically base64 encoded
-	default:
-		return fmt.Errorf("unsupported AI provider: %s", c.AI.Provider)
-	}
-
-	return nil
-}
-
-type Commit struct {
-	Conventional bool   `yaml:"conventional" mapstructure:"conventional"`
-	Emoji        bool   `yaml:"emoji" mapstructure:"emoji"`
-	Language     string `yaml:"language" mapstructure:"language"`
-}
-
-func DefaultCommitConfig() *Commit {
-	cfg := &Commit{}
-
-	// AI defaults
-	cfg.Conventional = true
-	cfg.Emoji = false
-	cfg.Language = "english"
-
-	return cfg
 }
