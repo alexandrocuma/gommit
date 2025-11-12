@@ -14,6 +14,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 )
 
@@ -136,8 +137,16 @@ to quickly create a Cobra application.`,
 			fmt.Printf("💾 PR description saved to: %s\n", outputFile)
 		}
 
+		if !copyToClipboard {
+			prompt := promptui.Prompt{
+				Label:     "✅ Commit with this message?",
+				IsConfirm: true,
+			}
+			_, err = prompt.Run()
+		}
+		
 		// Also update the clipboard usage in the main PR function:
-		if copyToClipboard {
+		if copyToClipboard || err == nil {
 			fullPRContent := fmt.Sprintf("# %s\n\n%s", prTitle, prDescription)
 			err := copyToClipboardUtil(fullPRContent)
 			if err != nil {
