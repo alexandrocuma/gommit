@@ -137,24 +137,24 @@ to quickly create a Cobra application.`,
 			fmt.Printf("💾 PR description saved to: %s\n", outputFile)
 		}
 
-		if !copyToClipboard {
-			prompt := promptui.Prompt{
-				Label:     "✅ Commit with this message?",
-				IsConfirm: true,
-			}
-			_, err = prompt.Run()
+		prompt := promptui.Prompt{
+			Label:     "📄 Copy to clipboard",
+			IsConfirm: true,
 		}
+		_, err = prompt.Run()
 		
+		if err != nil {
+			fmt.Println("\n🎉 PR description ready!")
+			return 
+		}
 		// Also update the clipboard usage in the main PR function:
-		if copyToClipboard || err == nil {
-			fullPRContent := fmt.Sprintf("# %s\n\n%s", prTitle, prDescription)
-			err := copyToClipboardUtil(fullPRContent)
-			if err != nil {
-				fmt.Printf("⚠️  Failed to copy to clipboard: %v\n", err)
-				fmt.Printf("ℹ️  %s\n", utils.GetClipboardInfo())
-			} else {
-				fmt.Println("📋 PR description copied to clipboard!")
-			}
+		fullPRContent := fmt.Sprintf("# %s\n\n%s", prTitle, prDescription)
+		err = copyToClipboardUtil(fullPRContent)
+		if err != nil {
+			fmt.Printf("⚠️  Failed to copy to clipboard: %v\n", err)
+			fmt.Printf("ℹ️  %s\n", utils.GetClipboardInfo())
+		} else {
+			fmt.Println("📋 PR description copied to clipboard!")
 		}
 
 		fmt.Println("\n🎉 PR description ready!")
