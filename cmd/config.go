@@ -38,12 +38,7 @@ to quickly create a Cobra application.`,
 		fmt.Printf("  Max Tokens:  %d\n", cfg.AI.MaxTokens)
 		fmt.Printf("  API Key:     %s\n", helpers.MaskAPIKey(cfg.AI.APIKey))
 
-		fmt.Printf("\n💾 Commit Settings:\n")
-		fmt.Printf("  Conventional: %v\n", cfg.Commit.Conventional)
-		fmt.Printf("  Emoji:        %v\n", cfg.Commit.Emoji)
-		fmt.Printf("  Language:     %s\n", cfg.Commit.Language)
-
-		fmt.Printf("\n📁 Config file: %s\n", helpers.GetConfigPath())
+		fmt.Printf("\n📁 Config files: %s\n", helpers.GetConfigPath())
 	},
 }
 

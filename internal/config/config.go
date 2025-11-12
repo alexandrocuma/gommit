@@ -10,13 +10,11 @@ import (
 
 type Config struct {
 	AI     AI     `yaml:"ai" mapstructure:"ai"`
-	Commit Commit `yaml:"commit" mapstructure:"commit"`
 }
 
 func DefaultConfig() *Config {
 	return &Config{
 		AI:     *DefaultAIConfig(),
-		Commit: *DefaultCommitConfig(),
 	}
 }
 
@@ -73,7 +71,6 @@ func LoadConfig() (*Config, error) {
 
 	// Set default values
 	viper.SetDefault("ai", DefaultAIConfig())
-	viper.SetDefault("commit", DefaultCommitConfig())
 
 	// Attempt to read config file
 	err = viper.ReadInConfig();
@@ -101,7 +98,6 @@ func LoadConfig() (*Config, error) {
 // Otherwise, it saves to ~/.gommit/.gommit.config.yaml
 func SaveConfig(cfg *Config) error {
 	viper.Set("ai", cfg.AI)
-	viper.Set("commit", cfg.Commit)
 
 	// Determine where to save
 	configPath := viper.ConfigFileUsed()
