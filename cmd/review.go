@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"gommit/internal/config"
 	"gommit/internal/git"
+	"gommit/internal/helpers"
 	"gommit/pkg/ai"
 	"gommit/pkg/utils"
 	"log"
@@ -103,7 +104,7 @@ var reviewCmd = &cobra.Command{
 		fmt.Println("\n" + strings.Repeat("━", 60))
 		fmt.Println("📋 PR Review generated")
 		fmt.Println(strings.Repeat("━", 60))
-		fmt.Println(prReview)
+		helpers.RenderMarkdown(prReview)
 		fmt.Println(strings.Repeat("━", 60))
 	},
 }
