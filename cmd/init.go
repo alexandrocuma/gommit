@@ -10,6 +10,7 @@ import (
 	"gommit/pkg/interactive"
 	"log"
 
+	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 )
 
@@ -26,12 +27,13 @@ to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if config.ConfigExists() {
 			fmt.Println("⚠️  Configuration file already exists!")
-			fmt.Print("Do you want to overwrite it? [y/N]: ")
+			prompt := promptui.Prompt{
+				Label:     "Do you want to overwrite it?",
+				IsConfirm: true,
+			}
 
-			var response string
-			fmt.Scanln(&response)
-
-			if response != "y" && response != "Y" {
+			_, err := prompt.Run()
+			if err != nil {
 				fmt.Println("Init cancelled.")
 				return
 			}

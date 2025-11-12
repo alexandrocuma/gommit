@@ -4,7 +4,6 @@ Copyright © 2025 Alexandro Cu alexandro.cuma@gmail.com
 package cmd
 
 import (
-	"bufio"
 	"fmt"
 	"gommit/internal/config"
 	"gommit/internal/git"
@@ -13,7 +12,6 @@ import (
 	"gommit/pkg/utils"
 	"log"
 	"os"
-	"os/exec"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -105,7 +103,7 @@ to quickly create a Cobra application.`,
 
 		// Generate PR title if not provided
 		if prTitle == "" {
-			prTitle = generatePRTitle(currentBranch, commits)
+			prTitle = generatePRTitle(currentBranch)
 		}
 
 		// Initialize AI client
@@ -141,33 +139,12 @@ to quickly create a Cobra application.`,
 		// Also update the clipboard usage in the main PR function:
 		if copyToClipboard {
 			fullPRContent := fmt.Sprintf("# %s\n\n%s", prTitle, prDescription)
-			if err := copyToClipboardUtil(fullPRContent); err != nil {
+			err := copyToClipboardUtil(fullPRContent)
+			if err != nil {
 				fmt.Printf("⚠️  Failed to copy to clipboard: %v\n", err)
 				fmt.Printf("ℹ️  %s\n", utils.GetClipboardInfo())
 			} else {
 				fmt.Println("📋 PR description copied to clipboard!")
-			}
-		}
-
-		// Interactive review
-		if !skipReview {
-			fmt.Print("\n🤔 Would you like to edit the PR description? [y/N]: ")
-			scanner := bufio.NewScanner(os.Stdin)
-			scanner.Scan()
-			response := strings.ToLower(strings.TrimSpace(scanner.Text()))
-
-			if response == "y" || response == "yes" {
-				editedContent, err := openInEditor(fmt.Sprintf("# %s\n\n%s", prTitle, prDescription))
-				if err != nil {
-					fmt.Printf("⚠️  Failed to open editor: %v\n", err)
-				} else {
-					fmt.Println("✅ PR description updated with your edits!")
-					if outputFile != "" {
-						if err := os.WriteFile(outputFile, []byte(editedContent), 0644); err != nil {
-							fmt.Printf("⚠️  Failed to update output file: %v\n", err)
-						}
-					}
-				}
 			}
 		}
 
@@ -186,7 +163,7 @@ func init() {
 	draftCmd.Flags().BoolVarP(&copyToClipboard, "clipboard", "c", false, "Copy PR description to clipboard")
 }
 
-func generatePRTitle(currentBranch string, commits []string) string {
+func generatePRTitle(currentBranch string) string {
 	// Clean up branch name for PR title
 	title := strings.TrimPrefix(currentBranch, "feature/")
 	title = strings.TrimPrefix(title, "feat/")
@@ -197,7 +174,6 @@ func generatePRTitle(currentBranch string, commits []string) string {
 	// Convert kebab-case or snake_case to Title Case
 	title = strings.ReplaceAll(title, "-", " ")
 	title = strings.ReplaceAll(title, "_", " ")
-	title = strings.Title(title)
 
 	return title
 }
@@ -215,41 +191,3 @@ func copyToClipboardUtil(content string) error {
 	return nil
 }
 
-func openInEditor(content string) (string, error) {
-	// Create temporary file
-	tmpFile, err := os.CreateTemp("", "pr-description-*.md")
-	if err != nil {
-		return "", err
-	}
-	defer os.Remove(tmpFile.Name())
-
-	// Write content to temp file
-	if _, err := tmpFile.WriteString(content); err != nil {
-		return "", err
-	}
-	tmpFile.Close()
-
-	// Get editor from environment or use default
-	editor := os.Getenv("EDITOR")
-	if editor == "" {
-		editor = "vim" // default to vim
-	}
-
-	// Open editor
-	cmd := exec.Command(editor, tmpFile.Name())
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	if err := cmd.Run(); err != nil {
-		return "", err
-	}
-
-	// Read edited content
-	editedContent, err := os.ReadFile(tmpFile.Name())
-	if err != nil {
-		return "", err
-	}
-
-	return string(editedContent), nil
-}
