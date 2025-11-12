@@ -6,9 +6,9 @@ import "os"
 func GetConfigPath() string {
 	home, err := os.UserHomeDir()
 	if err != nil {
-		return "~/.gommit.config.yaml"
+		return "~/.gommit/.gommit.config.yaml"
 	}
-	return home + "/.gommit.config.yaml"
+	return home + "/.gommit/.gommit.config.yaml"
 }
 
 func MaskAPIKey(apiKey string) string {
