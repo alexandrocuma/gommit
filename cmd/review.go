@@ -100,11 +100,14 @@ var reviewCmd = &cobra.Command{
 			log.Fatalf("❌ Error generating PR description: %v", err)
 		}
 
+		out, err := helpers.RenderMarkdown(prReview)
+    if err != nil {
+      out = prReview
+    }
+
 		// Display results
 		fmt.Println("\n" + strings.Repeat("━", 60))
-		fmt.Println("📋 PR Review generated")
-		fmt.Println(strings.Repeat("━", 60))
-		helpers.RenderMarkdown(prReview)
+    fmt.Print(out)
 		fmt.Println(strings.Repeat("━", 60))
 	},
 }
