@@ -83,7 +83,8 @@ func (g *RealGitOperations) GetRecentCommits(count int) ([]string, error) {
 func (g *RealGitOperations) Commit(message string) error {
 	// Use -m to avoid editor for AI-generated commits
 	cmd := exec.Command("git", "commit", "-m", message)
-	if err := cmd.Run(); err != nil {
+	err := cmd.Run()
+	if err != nil {
 		return fmt.Errorf("failed to commit: %w", err)
 	}
 	return nil

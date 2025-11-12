@@ -18,11 +18,10 @@ func RunSetup() (*config.Config, error) {
 	}
 	cfg.AI = *AI
 
-	Commit, err := RunCommitSetup()
+	err = RunPromptSetup()
 	if err != nil {
-		return nil, fmt.Errorf("failed to setup commit format: %w", err)
+		return nil, fmt.Errorf("failed to setup prompt templates: %w", err)
 	}
-	cfg.Commit = *Commit
 
 	return cfg, nil
 }

@@ -78,7 +78,8 @@ func GetAvailableTemplates() ([]string, error) {
 	// Check templates directory
 	dirs := tm.getTemplateDirs()
 	for _, dir := range dirs {
-		if files, err := os.ReadDir(dir); err == nil {
+		files, err := os.ReadDir(dir)
+		if err == nil {
 			for _, file := range files {
 				if !file.IsDir() && isTemplateFile(file.Name()) {
 					templates = append(templates, strings.TrimSuffix(file.Name(), filepath.Ext(file.Name())))
@@ -104,39 +105,4 @@ func (tm *TemplateManager) getTemplateDirs() []string {
 func isTemplateFile(filename string) bool {
 	ext := strings.ToLower(filepath.Ext(filename))
 	return ext == ".md" || ext == ".txt" || ext == ".tmpl"
-}
-
-// CreateDefaultTemplate creates a default template if it doesn't exist
-func CreateDefaultTemplate() error {
-	tm := NewTemplateManager()
-
-	// Create templates directory if it doesn't exist
-	if err := os.MkdirAll(tm.templateDir, 0755); err != nil {
-		return err
-	}
-
-	defaultTemplatePath := filepath.Join(tm.templateDir, "default.md")
-	if _, err := os.Stat(defaultTemplatePath); os.IsNotExist(err) {
-		defaultContent := `# Description
-
-<!-- AI will generate a description of the changes here -->
-
-# Changelog
-
-<!-- AI will list the key changes and updates here -->
-
-# Test Evidence
-
-<!-- AI will describe testing performed here -->
-
-# Additional Notes
-
-<!-- AI will add any additional context or notes here -->
-`
-		if err := os.WriteFile(defaultTemplatePath, []byte(defaultContent), 0644); err != nil {
-			return err
-		}
-	}
-
-	return nil
 }

@@ -21,16 +21,19 @@ func CopyToClipboard(content string) error {
 // copyToClipboardMac copies text to clipboard on macOS
 func copyToClipboardMac(content string) error {
 	// Try pbcopy first (most common)
-	if _, err := exec.LookPath("pbcopy"); err == nil {
+	_, err := exec.LookPath("pbcopy")
+	if err == nil {
 		return runCommand("pbcopy", content)
 	}
 
 	// Fallback to xclip/xsel if available (for macOS with X11)
-	if _, err := exec.LookPath("xclip"); err == nil {
+	_, err = exec.LookPath("xclip")
+	if err == nil {
 		return runCommand("xclip", "-selection", "clipboard", content)
 	}
 
-	if _, err := exec.LookPath("xsel"); err == nil {
+	_, err = exec.LookPath("xsel")
+	if err == nil {
 		return runCommand("xsel", "--clipboard", "--input", content)
 	}
 
@@ -40,22 +43,26 @@ func copyToClipboardMac(content string) error {
 // copyToClipboardLinux copies text to clipboard on Linux
 func copyToClipboardLinux(content string) error {
 	// Try xclip first
-	if _, err := exec.LookPath("xclip"); err == nil {
+	_, err := exec.LookPath("xclip")
+	if err == nil {
 		return runCommand("xclip", content, "-selection", "clipboard")
 	}
 
 	// Try xsel as alternative
-	if _, err := exec.LookPath("xsel"); err == nil {
+	 _, err = exec.LookPath("xsel")
+	if err == nil {
 		return runCommand("xsel", content, "--clipboard", "--input")
 	}
 
 	// Try wl-copy for Wayland
-	if _, err := exec.LookPath("wl-copy"); err == nil {
+	_, err = exec.LookPath("wl-copy");
+	if err == nil {
 		return runCommand("wl-copy", content)
 	}
 
 	// Try termux-api for Android/Termux
-	if _, err := exec.LookPath("termux-clipboard-set"); err == nil {
+	 _, err = exec.LookPath("termux-clipboard-set")
+	if err == nil {
 		return runCommand("termux-clipboard-set", content)
 	}
 
@@ -73,61 +80,30 @@ func runCommand(name string, content string, args ...string) error {
 	}
 
 	// Start the command
-	if err := cmd.Start(); err != nil {
+	err = cmd.Start()
+	if err != nil {
 		return fmt.Errorf("failed to start command: %w", err)
 	}
 
 	// Write content to stdin
-	if _, err := stdin.Write([]byte(content)); err != nil {
+	_, err = stdin.Write([]byte(content))
+	if err != nil {
 		return fmt.Errorf("failed to write to stdin: %w", err)
 	}
 
 	// Close stdin
-	if err := stdin.Close(); err != nil {
+	err = stdin.Close()
+	if err != nil {
 		return fmt.Errorf("failed to close stdin: %w", err)
 	}
 
 	// Wait for command to complete
-	if err := cmd.Wait(); err != nil {
+	err = cmd.Wait()
+	if err != nil {
 		return fmt.Errorf("command failed: %w", err)
 	}
 
 	return nil
-}
-
-// runCommandWithStdin runs a command with content piped via stdin with specific arguments
-func runCommandWithStdin(name string, args ...string) func(string) error {
-	return func(content string) error {
-		cmd := exec.Command(name, args...)
-
-		// Get stdin pipe
-		stdin, err := cmd.StdinPipe()
-		if err != nil {
-			return fmt.Errorf("failed to get stdin pipe: %w", err)
-		}
-
-		// Start the command
-		if err := cmd.Start(); err != nil {
-			return fmt.Errorf("failed to start command: %w", err)
-		}
-
-		// Write content to stdin
-		if _, err := stdin.Write([]byte(content)); err != nil {
-			return fmt.Errorf("failed to write to stdin: %w", err)
-		}
-
-		// Close stdin
-		if err := stdin.Close(); err != nil {
-			return fmt.Errorf("failed to close stdin: %w", err)
-		}
-
-		// Wait for command to complete
-		if err := cmd.Wait(); err != nil {
-			return fmt.Errorf("command failed: %w", err)
-		}
-
-		return nil
-	}
 }
 
 // IsClipboardAvailable checks if clipboard functionality is available

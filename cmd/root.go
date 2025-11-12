@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"gommit/internal/config"
 	"gommit/internal/git"
-	"gommit/internal/helpers"
 	"gommit/pkg/ai"
 	"log"
 	"os"
@@ -54,7 +53,6 @@ var rootCmd = &cobra.Command{
 
 		if verbose {
 			fmt.Printf("🤖 Using AI provider: %s\n", cfg.AI.Provider)
-			fmt.Printf("📝 Commit style: %s\n", helpers.GetCommitStyle(cfg))
 		}
 
 		// Initialize git operations
@@ -115,7 +113,7 @@ var rootCmd = &cobra.Command{
 			log.Fatalf("❌ Failed to initialize AI client: %v", err)
 		}
 
-		message, err := aiClient.GenerateCommitMessage(diff, context, &cfg.Commit)
+		message, err := aiClient.GenerateCommitMessage(diff, context)
 		if err != nil {
 			log.Fatalf("❌ Error generating commit message: %v", err)
 		}
