@@ -1,4 +1,4 @@
-module gommit
+module github.com/alexandrocuma/gommit
 
 go 1.25.2
 
