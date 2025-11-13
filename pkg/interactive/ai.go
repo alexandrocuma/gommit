@@ -72,5 +72,24 @@ func RunAISetup() (*config.AI, error) {
 	temp, _ := strconv.ParseFloat(tempStr, 64)
 	cfg.Temperature = temp
 
+	// Temperature
+	tokensPrompt := promptui.Prompt{
+		Label:    "Maximum token usage",
+		Default:  fmt.Sprintf("%d", cfg.MaxTokens),
+		Validate: helpers.ValidateTemperature,
+	}
+
+	tokenStr, err := tokensPrompt.Run()
+	if err != nil {
+		return nil, fmt.Errorf("temperature input failed: %w", err)
+	}
+	// Parse as int64, then convert to int
+	tokens, err := strconv.ParseInt(tokenStr, 10, 0) // Use base 10 for decimal input
+	if err != nil {
+			return nil, fmt.Errorf("invalid tokens value: %w", err)
+	}
+
+	cfg.MaxTokens = int(tokens) // Convert int64 to int
+	
 	return cfg, nil
 }

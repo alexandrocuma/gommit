@@ -17,13 +17,26 @@ import (
 // initCmd represents the init command
 var initCmd = &cobra.Command{
 	Use:   "init",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "Initialize configuration interactively",
+	Long: `Runs an interactive setup wizard to create or overwrite your Gommit configuration file.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+			Features:
+			• Interactive prompt-driven configuration
+			• Guides through AI provider selection
+			• Securely stores API credentials
+			• Warns before overwriting existing config
+			• Automatically saves to correct location
+			• Validates configuration before saving
+
+			Examples:
+				gommit init
+
+			Setup process includes:
+			• AI provider and model selection
+			• API key configuration
+			• Parameter tuning (temperature, tokens)
+			• Config file creation in user directory
+			• Next steps guidance for using gommit`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if config.ConfigExists() {
 			fmt.Println("⚠️  Configuration file already exists!")
@@ -53,7 +66,7 @@ to quickly create a Cobra application.`,
 		fmt.Printf("✅ Configuration saved to: %s\n", configPath)
 		fmt.Println("\n🎉 Setup complete! You can now use gommit CLI.")
 		fmt.Println("\nNext steps:")
-		fmt.Println("  gommit     		 # Generate AI-powered commit messages")
+		fmt.Println("  gommit     		 # Generate commit messages")
 		fmt.Println("  gommit draft    # Generate a PR description")
 		fmt.Println("  gommit review   # Generate a PR review")
 	},

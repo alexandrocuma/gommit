@@ -21,7 +21,7 @@ import (
 // reviewCmd represents the review command
 var reviewCmd = &cobra.Command{
 	Use:   "review",
-	Short: "Generate AI-powered PR descriptions from branch differences",
+	Short: "Generate PR descriptions from branch differences",
 	Long: `Automatically create comprehensive PR descriptions using AI by analyzing changes between branches.
 
 		This command compares your current branch with a base branch, analyzes the code differences,

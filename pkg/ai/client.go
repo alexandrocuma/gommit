@@ -96,7 +96,6 @@ func (c *Client) GenerateCommitMessage(diff string, data []string) (string, erro
 	return message, nil
 }
 
-
 func (c *Client) buildCommitData(diff string, data []string) string {
 	var contextSection string
 	if len(data) > 0 {
@@ -196,6 +195,7 @@ func (c *Client) buildPRDescriptionData(title string, commits []string, diff str
 		template)
 }
 
+// GeneratePRReview generates pre-merge PR review based on the change diffs
 func (c *Client) GeneratePRReview(diff string) (string, error) {
 	prompt, err := c.loadPromptFile("review.md")
 	if err != nil {

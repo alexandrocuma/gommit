@@ -51,7 +51,8 @@ func (tm *TemplateManager) loadTemplateByName(templateName string) (string, erro
 		paths := tm.getTemplatePaths(filename)
 
 		for _, path := range paths {
-			if content, err := os.ReadFile(path); err == nil {
+			content, err := os.ReadFile(path)
+			if err == nil {
 				return string(content), nil
 			}
 		}

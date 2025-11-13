@@ -24,7 +24,7 @@ var (
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "gommit",
-	Short: "Generate AI-powered commit messages for staged changes",
+	Short: "Generate commit messages for staged changes",
 	Long: `Automatically generate meaningful commit messages using AI based on your staged changes.
 
 		This command analyzes your git diff, understands the context of your changes,
@@ -105,7 +105,7 @@ var rootCmd = &cobra.Command{
 
 		// Initialize AI client
 		if verbose {
-			fmt.Println("🧠 Generating commit message with AI...")
+			fmt.Println("🧠 Generating commit message...")
 		}
 
 		aiClient, err := ai.NewClient(cfg)
