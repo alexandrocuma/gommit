@@ -2,10 +2,11 @@ package interactive
 
 import (
 	"fmt"
-	"gommit/internal/config"
-	"gommit/internal/helpers"
 	"strconv"
 	"strings"
+
+	"github.com/alexandrocuma/gommit/internal/config"
+	"github.com/alexandrocuma/gommit/internal/helpers"
 
 	"github.com/manifoldco/promptui"
 )

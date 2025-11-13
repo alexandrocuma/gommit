@@ -5,14 +5,15 @@ package cmd
 
 import (
 	"fmt"
-	"gommit/internal/config"
-	"gommit/internal/git"
-	"gommit/pkg/ai"
-	"gommit/pkg/template"
-	"gommit/pkg/utils"
 	"log"
 	"os"
 	"strings"
+
+	"github.com/alexandrocuma/gommit/internal/config"
+	"github.com/alexandrocuma/gommit/internal/git"
+	"github.com/alexandrocuma/gommit/pkg/ai"
+	"github.com/alexandrocuma/gommit/pkg/template"
+	"github.com/alexandrocuma/gommit/pkg/utils"
 
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"

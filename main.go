@@ -1,9 +1,9 @@
 /*
-Copyright © 2025 NAME HERE <EMAIL ADDRESS>
+Copyright © 2025 Alexandro Cu alexandro.cuma@gmail.com
 */
-package main
+package main // Package main provides the gommit CLI tool for AI-powered Git companion
 
-import "gommit/cmd"
+import "github.com/alexandrocuma/gommit/cmd"
 
 func main() {
 	cmd.Execute()

@@ -5,10 +5,11 @@ package cmd
 
 import (
 	"fmt"
-	"gommit/internal/config"
-	"gommit/internal/helpers"
-	"gommit/pkg/interactive"
 	"log"
+
+	"github.com/alexandrocuma/gommit/internal/config"
+	"github.com/alexandrocuma/gommit/internal/helpers"
+	"github.com/alexandrocuma/gommit/pkg/interactive"
 
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
