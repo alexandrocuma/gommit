@@ -7,9 +7,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"gommit/internal/config"
-	"gommit/pkg/ai/providers"
-	"gommit/pkg/utils"
+	"github.com/alexandrocuma/gommit/internal/config"
+	"github.com/alexandrocuma/gommit/pkg/ai/providers"
+	"github.com/alexandrocuma/gommit/pkg/utils"
 )
 
 // Client implements the AI operations using the configured provider

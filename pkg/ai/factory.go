@@ -3,8 +3,8 @@ package ai
 import (
 	"fmt"
 
-	"gommit/internal/config"
-	"gommit/pkg/ai/providers"
+	"github.com/alexandrocuma/gommit/internal/config"
+	"github.com/alexandrocuma/gommit/pkg/ai/providers"
 )
 
 // NewProvider creates a new AI provider based on configuration

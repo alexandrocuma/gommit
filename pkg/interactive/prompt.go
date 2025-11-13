@@ -2,10 +2,11 @@ package interactive
 
 import (
 	"fmt"
-	"gommit/pkg/utils"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/alexandrocuma/gommit/pkg/utils"
 
 	"github.com/manifoldco/promptui"
 )

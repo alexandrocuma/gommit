@@ -3,7 +3,7 @@ package interactive
 import (
 	"fmt"
 
-	"gommit/internal/config"
+	"github.com/alexandrocuma/gommit/internal/config"
 )
 
 func RunSetup() (*config.Config, error) {

@@ -3,7 +3,7 @@ Copyright © 2025 NAME HERE <EMAIL ADDRESS>
 */
 package main
 
-import "gommit/cmd"
+import "github.com/alexandrocuma/gommit/cmd"
 
 func main() {
 	cmd.Execute()
