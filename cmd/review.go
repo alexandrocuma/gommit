@@ -54,7 +54,7 @@ var reviewCmd = &cobra.Command{
 		cfg.ValidateAIConfig()
 
 		fmt.Println("🔍 Checking system requirements...")
-		
+
 		// Check git
 		gitOps := &git.RealGitOperations{}
 
@@ -82,7 +82,7 @@ var reviewCmd = &cobra.Command{
 		}
 
 		// Initialize AI client
-		fmt.Println("🧠 Generating PR description with AI...")
+		fmt.Println("🧠 Generating PR review...")
 		aiClient, err := ai.NewClient(cfg)
 		if err != nil {
 			log.Fatalf("❌ Failed to initialize AI client: %v", err)

@@ -101,7 +101,7 @@ to quickly create a Cobra application.`,
 		}
 
 		// Initialize AI client
-		fmt.Println("🧠 Generating PR description with AI...")
+		fmt.Println("🧠 Generating PR description...")
 		aiClient, err := ai.NewClient(cfg)
 		if err != nil {
 			log.Fatalf("❌ Failed to initialize AI client: %v", err)
