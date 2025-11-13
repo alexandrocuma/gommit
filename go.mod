@@ -1,6 +1,6 @@
 module github.com/alexandrocuma/gommit
 
-go 1.24
+go 1.25.2
 
 require (
 	github.com/anthropics/anthropic-sdk-go v1.16.0
