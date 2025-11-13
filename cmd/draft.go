@@ -48,13 +48,6 @@ to quickly create a Cobra application.`,
 
 		fmt.Println("🔍 Checking system requirements...")
 
-		if utils.IsClipboardAvailable() {
-			fmt.Println("✅ Clipboard support: Available")
-		} else {
-			fmt.Println("⚠️  Clipboard support: Not available")
-			fmt.Printf("ℹ️  %s\n", utils.GetClipboardInfo())
-		}
-
 		// Check git
 		gitOps := &git.RealGitOperations{}
 		if !gitOps.IsGitRepository() {
@@ -147,13 +140,10 @@ to quickly create a Cobra application.`,
 			fmt.Println("\n🎉 PR description ready!")
 			return 
 		}
-		// Also update the clipboard usage in the main PR function:
+		
 		fullPRContent := fmt.Sprintf("# %s\n\n%s", prTitle, prDescription)
-		err = copyToClipboardUtil(fullPRContent)
-		if err != nil {
-			fmt.Printf("⚠️  Failed to copy to clipboard: %v\n", err)
-			fmt.Printf("ℹ️  %s\n", utils.GetClipboardInfo())
-		} else {
+		err = utils.CopyToClipboardUtil(fullPRContent)
+		if err == nil {
 			fmt.Println("📋 PR description copied to clipboard!")
 		}
 
@@ -185,18 +175,5 @@ func generatePRTitle(currentBranch string) string {
 	title = strings.ReplaceAll(title, "_", " ")
 
 	return title
-}
-
-// Replace the copyToClipboardUtil function with:
-func copyToClipboardUtil(content string) error {
-	if !utils.IsClipboardAvailable() {
-		return fmt.Errorf("clipboard not available on this system")
-	}
-
-	if err := utils.CopyToClipboard(content); err != nil {
-		return fmt.Errorf("failed to copy to clipboard: %w", err)
-	}
-
-	return nil
 }
 

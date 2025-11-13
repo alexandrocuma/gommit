@@ -6,8 +6,8 @@ import (
 	"runtime"
 )
 
-// CopyToClipboard copies text to the system clipboard
-func CopyToClipboard(content string) error {
+// copyToClipboard copies text to the system clipboard
+func copyToClipboard(content string) error {
 	switch runtime.GOOS {
 	case "darwin":
 		return copyToClipboardMac(content)
@@ -106,8 +106,8 @@ func runCommand(name string, content string, args ...string) error {
 	return nil
 }
 
-// IsClipboardAvailable checks if clipboard functionality is available
-func IsClipboardAvailable() bool {
+// isClipboardAvailable checks if clipboard functionality is available
+func isClipboardAvailable() bool {
 	switch runtime.GOOS {
 	case "darwin":
 		return checkCommandExists("pbcopy") || checkCommandExists("xclip") || checkCommandExists("xsel")
@@ -126,8 +126,8 @@ func checkCommandExists(name string) bool {
 	return err == nil
 }
 
-// GetClipboardInfo returns information about available clipboard utilities
-func GetClipboardInfo() string {
+// getClipboardInfo returns information about available clipboard utilities
+func getClipboardInfo() string {
 	var available []string
 
 	switch runtime.GOOS {
@@ -168,4 +168,24 @@ func GetClipboardInfo() string {
 	}
 
 	return fmt.Sprintf("Available: %s", available)
+}
+
+
+// Replace the copyToClipboardUtil function with:
+func CopyToClipboardUtil(content string) error {
+	if isClipboardAvailable() {
+		fmt.Println("✅ Clipboard support: Available")
+	} else {
+		fmt.Println("⚠️  Clipboard support: Not available")
+		fmt.Printf("ℹ️  %s\n", getClipboardInfo())
+		
+		return fmt.Errorf("clipboard not available on this system")
+	}
+
+	err := copyToClipboard(content);
+	if err != nil {
+		return fmt.Errorf("failed to copy to clipboard: %w", err)
+	}
+
+	return nil
 }

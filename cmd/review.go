@@ -14,6 +14,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 )
 
@@ -53,14 +54,7 @@ var reviewCmd = &cobra.Command{
 		cfg.ValidateAIConfig()
 
 		fmt.Println("🔍 Checking system requirements...")
-
-		if utils.IsClipboardAvailable() {
-			fmt.Println("✅ Clipboard support: Available")
-		} else {
-			fmt.Println("⚠️  Clipboard support: Not available")
-			fmt.Printf("ℹ️  %s\n", utils.GetClipboardInfo())
-		}
-
+		
 		// Check git
 		gitOps := &git.RealGitOperations{}
 
@@ -109,6 +103,22 @@ var reviewCmd = &cobra.Command{
 		fmt.Println("\n" + strings.Repeat("━", 60))
     fmt.Print(out)
 		fmt.Println(strings.Repeat("━", 60))
+
+		prompt := promptui.Prompt{
+			Label:     "📄 Copy to clipboard",
+			IsConfirm: true,
+		}
+		_, err = prompt.Run()
+		
+		if err != nil {
+			fmt.Println("\n🎉 PR description ready!")
+			return 
+		}
+		
+		err = utils.CopyToClipboardUtil(prReview)
+		if err == nil {
+			fmt.Println("📋 PR description copied to clipboard!")
+		}
 	},
 }
 
