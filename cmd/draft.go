@@ -30,13 +30,29 @@ var (
 // draftCmd represents the draft command
 var draftCmd = &cobra.Command{
 	Use:   "draft",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "Generate PR descriptions from branch differences",
+	Long: `Creates comprehensive PR descriptions by analyzing git changes between branches using AI.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+			Features:
+			• Compares current branch with any base branch
+			• Analyzes commits, diff stats, and code changes
+			• Uses customizable templates for structure
+			• Generates intelligent PR titles from branch names
+			• Supports saving to file or clipboard
+			• Works with your configured AI provider
+
+			Examples:
+				gommit draft                     # Compare with default base branch
+				gommit draft --base main         # Compare with main branch
+				gommit draft --base develop      # Compare with develop branch
+				gommit draft --title "My changes" # Use custom PR title
+				gommit draft --output pr.md      # Save to file
+
+			The generated PR description includes:
+			• Structured overview from template
+			• Summary of commits and changes
+			• File statistics and impact analysis
+			• Ready-to-use markdown content`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// Load configuration
 		cfg, err := config.LoadConfig()
@@ -101,7 +117,7 @@ to quickly create a Cobra application.`,
 		}
 
 		// Initialize AI client
-		fmt.Println("🧠 Generating PR description with AI...")
+		fmt.Println("🧠 Generating PR description...")
 		aiClient, err := ai.NewClient(cfg)
 		if err != nil {
 			log.Fatalf("❌ Failed to initialize AI client: %v", err)
@@ -124,7 +140,8 @@ to quickly create a Cobra application.`,
 		// Handle output options
 		if outputFile != "" {
 			fullPRContent := fmt.Sprintf("# %s\n\n%s", prTitle, prDescription)
-			if err := os.WriteFile(outputFile, []byte(fullPRContent), 0644); err != nil {
+			err := os.WriteFile(outputFile, []byte(fullPRContent), 0644)
+			if err != nil {
 				log.Fatalf("❌ Failed to write output file: %v", err)
 			}
 			fmt.Printf("💾 PR description saved to: %s\n", outputFile)

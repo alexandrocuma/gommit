@@ -15,13 +15,25 @@ import (
 // configCmd represents the config command
 var configCmd = &cobra.Command{
 	Use:   "config",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "Display current configuration settings",
+	Long: `Shows your active Gommit configuration including AI provider settings and config file location.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+			Features:
+			• Displays AI provider, model, and parameters
+			• Shows masked API key for security
+			• Reveals configuration file path
+			• Helps verify and debug settings
+			• Validates configuration loading
+
+			Examples:
+				gommit config
+				gommit config show
+
+			The output includes:
+			• AI provider configuration
+			• Model settings (temperature, max tokens)
+			• Masked API key (showing last 4 characters)
+			• Config file location on disk`,
 	Run: func(cmd *cobra.Command, args []string) {
 		cfg, err := config.LoadConfig()
 		if err != nil {
@@ -38,7 +50,7 @@ to quickly create a Cobra application.`,
 		fmt.Printf("  Max Tokens:  %d\n", cfg.AI.MaxTokens)
 		fmt.Printf("  API Key:     %s\n", helpers.MaskAPIKey(cfg.AI.APIKey))
 
-		fmt.Printf("\n📁 Config files: %s\n", helpers.GetConfigPath())
+		fmt.Printf("\n📁 Config file: %s\n", helpers.GetConfigPath())
 	},
 }
 

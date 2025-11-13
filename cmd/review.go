@@ -21,7 +21,7 @@ import (
 // reviewCmd represents the review command
 var reviewCmd = &cobra.Command{
 	Use:   "review",
-	Short: "Generate AI-powered PR descriptions from branch differences",
+	Short: "Generate PR descriptions from branch differences",
 	Long: `Automatically create comprehensive PR descriptions using AI by analyzing changes between branches.
 
 		This command compares your current branch with a base branch, analyzes the code differences,
@@ -54,7 +54,7 @@ var reviewCmd = &cobra.Command{
 		cfg.ValidateAIConfig()
 
 		fmt.Println("🔍 Checking system requirements...")
-		
+
 		// Check git
 		gitOps := &git.RealGitOperations{}
 
@@ -82,7 +82,7 @@ var reviewCmd = &cobra.Command{
 		}
 
 		// Initialize AI client
-		fmt.Println("🧠 Generating PR description with AI...")
+		fmt.Println("🧠 Generating PR review...")
 		aiClient, err := ai.NewClient(cfg)
 		if err != nil {
 			log.Fatalf("❌ Failed to initialize AI client: %v", err)
