@@ -109,7 +109,8 @@ func setupPrompt(cfgDir, filename, defaultContent, label string) error {
 
 	// Save to file
 	filePath := filepath.Join(cfgDir, filename)
-	if err := os.WriteFile(filePath, []byte(content), 0644); err != nil {
+	err = os.WriteFile(filePath, []byte(content), 0644)
+	if err != nil {
 		return fmt.Errorf("failed to write file %q: %w", filePath, err)
 	}
 

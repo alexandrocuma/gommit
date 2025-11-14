@@ -23,5 +23,11 @@ func RunSetup() (*config.Config, error) {
 		return nil, fmt.Errorf("failed to setup prompt templates: %w", err)
 	}
 
+	Directory, err := RunDirectorySetup()
+	if err != nil {
+		return nil, fmt.Errorf("failed to setup directory paths: %w", err)
+	}
+	cfg.Directory = *Directory
+
 	return cfg, nil
 }
