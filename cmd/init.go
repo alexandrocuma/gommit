@@ -42,7 +42,7 @@ var initCmd = &cobra.Command{
 		if config.ConfigExists() {
 			fmt.Println("⚠️  Configuration file already exists!")
 			prompt := promptui.Prompt{
-				Label:     "Do you want to overwrite it?",
+				Label:     "Do you want to overwrite it",
 				IsConfirm: true,
 			}
 
