@@ -10,7 +10,7 @@ func DefaultDirectoryConfig() *Directory {
 
 	// Directory defaults
 	cfg.Prompts   = "~/.gommit"
-	cfg.Templates = "./templates"
+	cfg.Templates = "./templates" // Relative to current working directory
 
 	return cfg
 }

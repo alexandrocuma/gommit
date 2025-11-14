@@ -24,7 +24,7 @@ func RunDirectorySetup() (*config.Directory, error) {
 
 	promptsDir, err := promptsDirPrompt.Run()
 	if err != nil {
-		return nil, fmt.Errorf("model input failed: %w", err)
+		return nil, fmt.Errorf("template directory input failed: %w", err)
 	}
 
 	cfg.Prompts = promptsDir
@@ -42,7 +42,7 @@ func RunDirectorySetup() (*config.Directory, error) {
 
 	templatesDir, err := templatesDirPrompt.Run()
 	if err != nil {
-		return nil, fmt.Errorf("model input failed: %w", err)
+		return nil, fmt.Errorf("template directory input failed: %w", err)
 	}
 	
 	cfg.Templates = templatesDir
