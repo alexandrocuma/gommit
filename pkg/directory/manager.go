@@ -72,19 +72,29 @@ func EnsureDir(dirPath string, perm os.FileMode) error {
 
 // ListFiles lists all files (non-directories) in a directory
 func ListFiles(dirPath string) ([]string, error) {
-	return ListFilesWithFilter(dirPath, func(name string, isDir bool) bool {
+	resolvedPath, err := ResolvePath(dirPath)
+	if err != nil {
+		return nil, err
+	}
+
+	return ListFilesWithFilter(resolvedPath, func(name string, isDir bool) bool {
 		return !isDir
 	})
 }
 
 // ListFilesByExtension lists files with specific extensions
 func ListFilesByExtension(dirPath string, extensions ...string) ([]string, error) {
+	resolvedPath, err := ResolvePath(dirPath)
+	if err != nil {
+		return nil, err
+	}
+
 	extMap := make(map[string]bool)
 	for _, ext := range extensions {
 		extMap[strings.ToLower(ext)] = true
 	}
 
-	return ListFilesWithFilter(dirPath, func(name string, isDir bool) bool {
+	return ListFilesWithFilter(resolvedPath, func(name string, isDir bool) bool {
 		if isDir {
 			return false
 		}
@@ -333,6 +343,7 @@ func ResolvePath(path string) (string, error) {
 		if err != nil {
 			return "", fmt.Errorf("failed to get home directory: %w", err)
 		}
+		
 		// Join home dir with the rest of the path (after "~/")
 		return filepath.Join(homeDir, path[2:]), nil
 	}

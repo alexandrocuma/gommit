@@ -9,6 +9,7 @@ import (
 
 	"github.com/alexandrocuma/gommit/internal/config"
 	"github.com/alexandrocuma/gommit/internal/helpers"
+	"github.com/alexandrocuma/gommit/pkg/directory"
 
 	"github.com/spf13/cobra"
 )
@@ -56,6 +57,25 @@ var configCmd = &cobra.Command{
 		fmt.Printf("\n📁 Directory Settings:\n")
 		fmt.Printf("  Prompts:    %s\n", cfg.Directory.Prompts)
 		fmt.Printf("  Templates:  %s\n", cfg.Directory.Templates)
+	
+
+		fmt.Printf("\n📄 Prompt Files:\n")
+		files, err := directory.ListFilesByExtension(cfg.Directory.Prompts, ".md", ".txt")
+		if err != nil {
+			fmt.Printf("❌ Failed to list prompt files: %v", err)
+		}
+		for _, file := range files {
+			fmt.Printf("  -  %s\n", file)
+		}
+
+		fmt.Printf("\n📄 Template Files:\n")
+		files, err = directory.ListFilesByExtension(cfg.Directory.Templates, ".md", ".txt")
+		if err != nil {
+			fmt.Printf("❌ Failed to list template files: %v", err)
+		}
+		for _, file := range files {
+			fmt.Printf("  -  %s\n", file)
+		}
 		fmt.Printf("\n")
 	},
 }
