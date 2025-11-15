@@ -11,7 +11,12 @@ import (
 
 // LoadFile loads a single file from the specified path
 func LoadFile(filePath string) ([]byte, error) {
-	content, err := os.ReadFile(filePath)
+	resolvedPath, err := ResolvePath(filePath)
+	if err != nil {
+		return nil, err
+	}
+
+	content, err := os.ReadFile(resolvedPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read file %s: %w", filePath, err)
 	}
@@ -153,7 +158,12 @@ func LoadTemplate(dirPath, templateName string) (string, error) {
 }
 
 func loadTemplateFile(filePath string) (string, error) {
-	content, err := os.ReadFile(filePath)
+	resolvedPath, err := ResolvePath(filePath)
+	if err != nil {
+		return "", err
+	}
+
+	content, err := os.ReadFile(resolvedPath)
 	if err != nil {
 		return "", fmt.Errorf("failed to read template file %s: %w", filePath, err)
 	}
@@ -161,14 +171,20 @@ func loadTemplateFile(filePath string) (string, error) {
 }
 
 func loadTemplateByName(dirPath, templateName string) (string, error) {
+	resolvedPath, err := ResolvePath(dirPath)
+	if err != nil {
+		return "", err
+	}
+
 	extensions := []string{".md", ".txt", ""}
 
 	for _, ext := range extensions {
 		filename := templateName + ext
-		paths := getTemplatePaths(dirPath, filename)
+		paths := getTemplatePaths(resolvedPath, filename)
 
 		for _, path := range paths {
-			if content, err := os.ReadFile(path); err == nil {
+			content, err := os.ReadFile(path)
+			if err == nil {
 				return string(content), nil
 			}
 		}
@@ -178,6 +194,7 @@ func loadTemplateByName(dirPath, templateName string) (string, error) {
 }
 
 func getTemplatePaths(dirPath, filename string) []string {
+	
 	return []string{
 		filepath.Join(dirPath, filename),
 		filepath.Join(".github", dirPath, filename),
@@ -303,4 +320,23 @@ func DefaultDir(candidates []string, fallback string) string {
 		}
 	}
 	return fallback
+}
+
+// ResolvePath expands ~ to home directory and cleans the path
+func ResolvePath(path string) (string, error) {
+	if path == "~" {
+		return os.UserHomeDir()
+	}
+	
+	if strings.HasPrefix(path, "~/") {
+		homeDir, err := os.UserHomeDir()
+		if err != nil {
+			return "", fmt.Errorf("failed to get home directory: %w", err)
+		}
+		// Join home dir with the rest of the path (after "~/")
+		return filepath.Join(homeDir, path[2:]), nil
+	}
+	
+	// For relative or absolute paths, just clean them
+	return filepath.Clean(path), nil
 }
