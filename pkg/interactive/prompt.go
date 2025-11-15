@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/alexandrocuma/gommit/pkg/utils"
-
+	"github.com/alexandrocuma/gommit/internal/config"
+	"github.com/alexandrocuma/gommit/pkg/directory"
 	"github.com/manifoldco/promptui"
 )
 
@@ -43,17 +43,11 @@ Be constructive and educational in your feedback.
 )
 
 // RunPromptSetup runs the interactive configuration setup for prompt files
-func RunPromptSetup() error {
-	// Get the configuration directory
-	cfgDir, err := utils.GetConfigDir()
-	if err != nil {
-		return fmt.Errorf("failed to get config directory: %w", err)
-	}
-
+func RunPromptSetup(config *config.Config) error {
 	// Ensure the directory exists
-	err = os.MkdirAll(cfgDir, 0755)
+	err := directory.EnsureDir(config.Directory.Prompts, 0755)
 	if err != nil {
-		return fmt.Errorf("failed to create config directory %q: %w", cfgDir, err)
+		return fmt.Errorf("failed to create config directory %q: %w", config.Directory.Prompts, err)
 	}
 
 	// Define prompts to configure
@@ -69,7 +63,7 @@ func RunPromptSetup() error {
 
 	// Setup each prompt
 	for _, p := range prompts {
-		err := setupPrompt(cfgDir, p.filename, p.defaultValue, p.label)
+		err := setupPrompt(config.Directory.Prompts, p.filename, p.defaultValue, p.label)
 		if err != nil {
 			return fmt.Errorf("setup failed for %s: %w", p.filename, err)
 		}

@@ -12,7 +12,6 @@ import (
 	"github.com/alexandrocuma/gommit/internal/config"
 	"github.com/alexandrocuma/gommit/internal/git"
 	"github.com/alexandrocuma/gommit/pkg/ai"
-	"github.com/alexandrocuma/gommit/pkg/template"
 	"github.com/alexandrocuma/gommit/pkg/utils"
 
 	"github.com/manifoldco/promptui"
@@ -103,12 +102,6 @@ var draftCmd = &cobra.Command{
 			log.Fatalf("❌ Failed to get diff stats: %v", err)
 		}
 
-		// Load template
-		templateContent, err := template.LoadTemplate(templateFile)
-		if err != nil {
-			log.Fatalf("❌ Failed to load template: %v", err)
-		}
-
 		fmt.Printf("📝 Using template: %s\n", templateFile)
 		fmt.Printf("📄 Found %d commits with %d lines changed\n", len(commits), strings.Count(diff, "\n"))
 
@@ -125,7 +118,7 @@ var draftCmd = &cobra.Command{
 		}
 
 		// Generate PR description using template
-		prDescription, err := aiClient.GeneratePRDescriptionWithTemplate(prTitle, commits, diff, diffStats, templateContent)
+		prDescription, err := aiClient.GeneratePRDescriptionWithTemplate(prTitle, commits, diff, diffStats, templateFile)
 		if err != nil {
 			log.Fatalf("❌ Error generating PR description: %v", err)
 		}
@@ -173,7 +166,7 @@ func init() {
 	rootCmd.AddCommand(draftCmd)
 
 	draftCmd.Flags().StringVarP(&baseBranch, "base", "b", "", "Base branch to compare against (default: main/master)")
-	draftCmd.Flags().StringVarP(&templateFile, "template", "t", "default", "Template name or path to template file")
+	draftCmd.Flags().StringVarP(&templateFile, "template", "t", "default.md", "Template name or path to template file")
 	draftCmd.Flags().StringVarP(&outputFile, "output", "o", "", "Output file to save PR description")
 	draftCmd.Flags().StringVarP(&prTitle, "title", "T", "", "PR title (default: auto-generated from branch name)")
 	draftCmd.Flags().BoolVar(&skipReview, "skip-review", false, "Skip interactive review and editing")

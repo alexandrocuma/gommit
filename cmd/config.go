@@ -41,6 +41,8 @@ var configCmd = &cobra.Command{
 			log.Fatalf("❌ Failed to load configuration: %v", err)
 		}
 
+		fmt.Printf("\n")
+		fmt.Println("────────────────────────────────")
 		fmt.Println("📋 Current Gommit Configuration:")
 		fmt.Println("────────────────────────────────")
 
@@ -51,7 +53,10 @@ var configCmd = &cobra.Command{
 		fmt.Printf("  Max Tokens:  %d\n", cfg.AI.MaxTokens)
 		fmt.Printf("  API Key:     %s\n", helpers.MaskAPIKey(cfg.AI.APIKey))
 
-		fmt.Printf("\n📁 Config file: %s\n", helpers.GetConfigPath())
+		fmt.Printf("\n📁 Directory Settings:\n")
+		fmt.Printf("  Prompts:    %s\n", cfg.Directory.Prompts)
+		fmt.Printf("  Templates:  %s\n", cfg.Directory.Templates)
+		fmt.Printf("\n")
 	},
 }
 
