@@ -18,16 +18,16 @@ func RunSetup() (*config.Config, error) {
 	}
 	cfg.AI = *AI
 
-	err = RunPromptSetup()
-	if err != nil {
-		return nil, fmt.Errorf("failed to setup prompt templates: %w", err)
-	}
-
 	Directory, err := RunDirectorySetup()
 	if err != nil {
 		return nil, fmt.Errorf("failed to setup directory paths: %w", err)
 	}
 	cfg.Directory = *Directory
+
+	err = RunPromptSetup(cfg)
+	if err != nil {
+		return nil, fmt.Errorf("failed to setup prompt templates: %w", err)
+	}
 
 	return cfg, nil
 }

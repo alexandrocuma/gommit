@@ -3,20 +3,18 @@ package ai
 import (
 	"context"
 	"fmt"
-	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/alexandrocuma/gommit/internal/config"
 	"github.com/alexandrocuma/gommit/pkg/ai/providers"
-	"github.com/alexandrocuma/gommit/pkg/utils"
+	"github.com/alexandrocuma/gommit/pkg/directory"
 )
 
 // Client implements the AI operations using the configured provider
 type Client struct {
 	provider providers.Provider
 	cfg      *config.AI
-	configDir string 
+	dirs config.Directory
 }
 
 // NewClient creates a new AI client
@@ -26,53 +24,34 @@ func NewClient(cfg *config.Config) (*Client, error) {
 		return nil, fmt.Errorf("failed to create AI provider: %w", err)
 	}
 
-	// Determine config directory
-	configDir, err := utils.GetConfigDir()
-	if err != nil {
-		return nil, fmt.Errorf("failed to get config directory: %w", err)
-	}
-
 	return &Client{
 		provider:  provider,
 		cfg:       &cfg.AI,
-		configDir: configDir,
+		dirs: cfg.Directory,
 	}, nil
-}
-
-
-// loadPromptFile loads a prompt file from the config directory
-// Returns empty string if file doesn't exist (use default behavior)
-func (c *Client) loadPromptFile(filename string) (string, error) {
-	promptPath := filepath.Join(c.configDir, filename)
-	
-	data, err := os.ReadFile(promptPath)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return "", nil // File doesn't exist, use default
-		}
-		return "", fmt.Errorf("failed to read prompt file %s: %w", promptPath, err)
-	}
-	
-	return string(data), nil
 }
 
 // GenerateCommitMessage creates a commit message using the configured AI provider
 func (c *Client) GenerateCommitMessage(diff string, data []string) (string, error) {
-	promptContent, err := c.loadPromptFile("commit.md")
+	fileContent, err :=directory.LoadFileFromDir(c.dirs.Prompts, "commit.md")
+	prompt := string(fileContent)
 	if err != nil {
 		return "", err
 	}
+	if prompt == "" {
+		return "", fmt.Errorf("prompt is missing, check your 'pr description generator' prompt file (commit.md)")
+	}
 
-	prompt := c.buildCommitData(diff, data)
+	content := c.buildCommitData(diff, data)
 
 	messages := []providers.Message{
 		{
 			Role:    "system",
-			Content: promptContent,
+			Content: prompt,
 		},
 		{
 			Role:    "user",
-			Content: prompt,
+			Content: content,
 		},
 	}
 
@@ -136,8 +115,9 @@ func (c *Client) postProcessCommitMessage(message string) string {
 }
 
 // GeneratePRDescriptionWithTemplate generates PR description using a template
-func (c *Client) GeneratePRDescriptionWithTemplate(title string, commits []string, diff string, diffStats string, template string) (string, error) {
-	prompt, err := c.loadPromptFile("draft.md")
+func (c *Client) GeneratePRDescriptionWithTemplate(title string, commits []string, diff string, diffStats string, templateFile string) (string, error) {
+	fileContent, err :=directory.LoadFileFromDir(c.dirs.Prompts, "draft.md")
+	prompt := string(fileContent)
 	if err != nil {
 		return "", err
 	}
@@ -145,7 +125,16 @@ func (c *Client) GeneratePRDescriptionWithTemplate(title string, commits []strin
 		return "", fmt.Errorf("prompt is missing, check your 'pr description generator' prompt file (draft.md)")
 	}
 
-	data := c.buildPRDescriptionData(title, commits, diff, diffStats, template)
+	fileContent, err = directory.LoadFileFromDir(c.dirs.Templates, templateFile)
+	template := string(fileContent)
+	if err != nil {
+		return "", err
+	}
+	if template == "" {
+		return "", fmt.Errorf("prompt is missing, check your 'pr description generator' prompt file (%s)", templateFile)
+	}
+
+	content := c.buildPRDescriptionData(title, commits, diff, diffStats, template)
 
 	messages := []providers.Message{
 		{
@@ -154,7 +143,7 @@ func (c *Client) GeneratePRDescriptionWithTemplate(title string, commits []strin
 		},
 		{
 			Role:    "user",
-			Content: data,
+			Content: content,
 		},
 	}
 
@@ -197,13 +186,13 @@ func (c *Client) buildPRDescriptionData(title string, commits []string, diff str
 
 // GeneratePRReview generates pre-merge PR review based on the change diffs
 func (c *Client) GeneratePRReview(diff string) (string, error) {
-	prompt, err := c.loadPromptFile("review.md")
+	fileContent, err :=directory.LoadFileFromDir(c.dirs.Prompts, "review.md")
+	prompt := string(fileContent)
 	if err != nil {
 		return "", err
 	}
-
 	if prompt == "" {
-		return "", fmt.Errorf("prompt is missing, check your 'pr reviewer' prompt file (review.md)")
+		return "", fmt.Errorf("prompt is missing, check your 'pr description generator' prompt file (review.md)")
 	}
 
 	messages := []providers.Message{
