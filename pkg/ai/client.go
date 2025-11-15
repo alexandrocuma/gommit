@@ -33,8 +33,7 @@ func NewClient(cfg *config.Config) (*Client, error) {
 
 // GenerateCommitMessage creates a commit message using the configured AI provider
 func (c *Client) GenerateCommitMessage(diff string, data []string) (string, error) {
-	fileContent, err :=directory.LoadFileFromDir(c.dirs.Prompts, "commit.md")
-	prompt := string(fileContent)
+	prompt, err := directory.LoadTemplate(c.dirs.Prompts, "commit.md")
 	if err != nil {
 		return "", err
 	}
@@ -116,8 +115,7 @@ func (c *Client) postProcessCommitMessage(message string) string {
 
 // GeneratePRDescriptionWithTemplate generates PR description using a template
 func (c *Client) GeneratePRDescriptionWithTemplate(title string, commits []string, diff string, diffStats string, templateFile string) (string, error) {
-	fileContent, err :=directory.LoadFileFromDir(c.dirs.Prompts, "draft.md")
-	prompt := string(fileContent)
+	prompt, err := directory.LoadTemplate(c.dirs.Prompts, "draft.md")
 	if err != nil {
 		return "", err
 	}
@@ -125,8 +123,7 @@ func (c *Client) GeneratePRDescriptionWithTemplate(title string, commits []strin
 		return "", fmt.Errorf("prompt is missing, check your 'pr description generator' prompt file (draft.md)")
 	}
 
-	fileContent, err = directory.LoadFileFromDir(c.dirs.Templates, templateFile)
-	template := string(fileContent)
+	template, err := directory.LoadTemplate(c.dirs.Templates, templateFile)
 	if err != nil {
 		return "", err
 	}
@@ -186,8 +183,7 @@ func (c *Client) buildPRDescriptionData(title string, commits []string, diff str
 
 // GeneratePRReview generates pre-merge PR review based on the change diffs
 func (c *Client) GeneratePRReview(diff string) (string, error) {
-	fileContent, err :=directory.LoadFileFromDir(c.dirs.Prompts, "review.md")
-	prompt := string(fileContent)
+	prompt, err := directory.LoadTemplate(c.dirs.Prompts, "review.md")
 	if err != nil {
 		return "", err
 	}
