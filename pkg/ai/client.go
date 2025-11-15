@@ -14,7 +14,7 @@ import (
 type Client struct {
 	provider providers.Provider
 	cfg      *config.AI
-	dirs *config.Directory
+	dirs config.Directory
 }
 
 // NewClient creates a new AI client
@@ -27,7 +27,7 @@ func NewClient(cfg *config.Config) (*Client, error) {
 	return &Client{
 		provider:  provider,
 		cfg:       &cfg.AI,
-		dirs: &cfg.Directory,
+		dirs: cfg.Directory,
 	}, nil
 }
 
@@ -130,7 +130,7 @@ func (c *Client) GeneratePRDescriptionWithTemplate(title string, commits []strin
 	if err != nil {
 		return "", err
 	}
-	if prompt == "" {
+	if template == "" {
 		return "", fmt.Errorf("prompt is missing, check your 'pr description generator' prompt file (%s)", templateFile)
 	}
 
