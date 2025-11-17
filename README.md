@@ -57,7 +57,7 @@ This will guide you through:
 
 | Command Name    | Description                                                |
 | --------------- | ---------------------------------------------------------- |
-| `gommit init`   | Initialize your Gommit configuration interactively.source. |
+| `gommit init`   | Initialize your Gommit configuration interactively. |
 | `gommit`        | Generate commit message from branch diffs.                 |
 | `gommit draft`  | Generate PR description from branch diffs.                 |
 | `gommit review` | Generate PR review from branch diffs.                      |
