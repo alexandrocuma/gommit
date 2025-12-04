@@ -66,6 +66,48 @@ func EnsureDir(dirPath string, perm os.FileMode) error {
 	return os.MkdirAll(dirPath, perm)
 }
 
+// ------------------------------------------------------------------
+// 1.  List every **sub-directory** (non-recursive) inside a directory
+// ------------------------------------------------------------------
+func ListDirs(dirPath string) ([]string, error) {
+	resolved, err := ResolvePath(dirPath)
+	if err != nil {
+		return nil, err
+	}
+	return listEntries(resolved, func(_ string, isDir bool) bool { return isDir })
+}
+
+// ------------------------------------------------------------------
+// 2.  List only directories whose name matches a given prefix
+// ------------------------------------------------------------------
+func ListDirsWithPrefix(dirPath, prefix string) ([]string, error) {
+	resolved, err := ResolvePath(dirPath)
+	if err != nil {
+		return nil, err
+	}
+	return listEntries(resolved, func(name string, isDir bool) bool {
+		return isDir && strings.HasPrefix(name, prefix)
+	})
+}
+
+// ------------------------------------------------------------------
+// 3.  Generic directory filter (used internally)
+// ------------------------------------------------------------------
+func listEntries(dirPath string, want func(name string, isDir bool) bool) ([]string, error) {
+	entries, err := os.ReadDir(dirPath)
+	if err != nil {
+		return nil, fmt.Errorf("cannot read directory %s: %w", dirPath, err)
+	}
+	var out []string
+	for _, e := range entries {
+		if want(e.Name(), e.IsDir()) {
+			out = append(out, e.Name())
+		}
+	}
+	return out, nil
+}
+
+
 // =============================================================================
 // File Listing and Filtering
 // =============================================================================
